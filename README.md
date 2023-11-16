@@ -1,4 +1,4 @@
-![image](https://github.com/synthesis-labs/AoC_2023/assets/25528701/9bcf916e-8248-4e72-8777-ab4511b93bca)# Advent of Code 2023 Solutions
+# Advent of Code 2023 Solutions
 
 :rocket: Presented by Labs Team :rocket:
 
