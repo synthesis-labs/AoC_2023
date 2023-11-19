@@ -1,0 +1,14 @@
+cabal-version:      3.0
+name:               aoc
+version:            0.1.0.0
+license:            NONE
+author:             Tjaard du Plessis
+maintainer:         tjaard@synthesis.co.za
+build-type:         Simple
+
+executable aoc
+    main-is:          Main.hs
+    other-modules:    Day01
+    build-depends:    base ^>=4.17.2.0
+    hs-source-dirs:   app
+    default-language: Haskell2010
