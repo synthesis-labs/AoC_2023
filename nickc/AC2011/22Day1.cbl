@@ -11,16 +11,16 @@
        FILE SECTION.
        FD SONAR-DATA.
        01 FD-SONAR-FILE.
-           05 FD-SONAR-VALUE  PIC 9(4).
+           05 FD-SONAR-VALUE   PIC 9(4).
 
        WORKING-STORAGE SECTION.
        01 WS-SONAR-DATA.
-           05 DEPTH-VALUE  PIC 9(4).
+           05 WS-DEPTH-VALUE   PIC 9(4).
        01 WS-PREVIOUs.
-           05 WS-DATA      PIC 9(4).
-       01 WS-EOF           PIC A(1) VALUE 'N'.
-       01 WS-INCREASES     PIC 9(4) VALUE 0.
-       01 WS-COUNT         PIC 9(4) VALUE 0.
+           05 WS-WS-DATA       PIC 9(4).
+       01 WS-EOF               PIC A(1) VALUE 'N'.
+       01 WS-INCREASES         PIC 9(4) VALUE 0.
+       01 WS-COUNT             PIC 9(4) VALUE 0.
 
        PROCEDURE DIVISION.
            PERFORM 1001-INPUT-FILE.
