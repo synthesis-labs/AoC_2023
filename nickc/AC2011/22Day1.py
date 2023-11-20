@@ -1,14 +1,14 @@
 sonardata = open('sonar-data', 'r')
 
 previous = ""
-increates, count = 0
+increases, count = 0
 
 with open('sonar-data') as data:
     for line in data:
         count = count + 1
         if (line > previous):
-            increates = increates + 1
+            increases = increases + 1
         previous = line
     
 print("Number of Points - ", count)    
-print("Number of Points - ", increates)
+print("Number of Points - ", increases)
