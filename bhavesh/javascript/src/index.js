@@ -4,7 +4,10 @@ async function main() {
   const N = 25;
 
   for (let i = 1; i <= N; i++) {
-    let answer;
+    let answer = {
+      part1: "",
+      part2: "",
+    };
     let question = i.toString().padStart(2, "0");
     try {
       const dayModule = await import(`./days/day${question}.js`);
