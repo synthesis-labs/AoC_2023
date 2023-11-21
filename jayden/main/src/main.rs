@@ -1,3 +1,6 @@
+mod prepwork;
+
 fn main() {
-    println!("Hello, world!");
+    prepwork::prep01::calorie_counting_part1();
+    prepwork::prep01::calorie_counting_part2();
 }
