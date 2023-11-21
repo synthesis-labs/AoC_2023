@@ -1,6 +1,8 @@
+use std::error::Error;
+
 use reqwest::header::COOKIE;
 
-pub async fn get_question_data(year: i32, day: i32) -> String {
+pub async fn get_question_data(year: i32, day: i32) -> Result<String, Box<dyn Error>> {
     let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
     let cookie = std::env::var("COOKIE").expect("COOKIE must be set.");
 
@@ -10,11 +12,9 @@ pub async fn get_question_data(year: i32, day: i32) -> String {
         .get(url)
         .header(COOKIE, cookie)
         .send()
-        .await
-        .expect("Could not get response")
+        .await?
         .text()
-        .await
-        .expect("Could not get text");
+        .await?;
 
-    response
+    Ok(response)
 }
