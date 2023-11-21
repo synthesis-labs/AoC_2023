@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 
 pub fn calorie_counting_part1(){
     let mut highest_cal: i32 = 0;
-    let mut current_cals: i32 = 1;
+    let mut current_cals: i32 = 0;
 
     if let Ok(lines) = read_lines("./src/input/aoc2022d01.txt") {
         for line in lines {
