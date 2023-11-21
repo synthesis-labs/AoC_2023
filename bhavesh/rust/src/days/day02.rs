@@ -1,7 +1,11 @@
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
 pub async fn solve() -> AocAnswer {
-    let response = get_question_data(2022, 2).await;
+    let response = get_question_data(2022, 2)
+        .await
+        .expect("Could not get Day 2 data");
+
+    println!("{:?}", response);
 
     let result = AocAnswer {
         day: 2,
@@ -15,4 +19,3 @@ pub async fn solve() -> AocAnswer {
 fn part1() -> i32 {
     0
 }
-
