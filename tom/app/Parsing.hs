@@ -16,8 +16,8 @@ many_pairs :: Parsec String () [(Int, Int)]
 many_pairs = many1 $ pair <* (optional newline)
 
 -- Run parser or die!
-run_parser :: Parsec String () a -> String -> IO a
+run_parser :: Parsec String () a -> String -> a
 run_parser parser input =
   case runParser parser () "(input)" input of
     Left err -> error $ "A terribly unfortunate parsing error: " ++ (show err)
-    Right a  -> pure a
+    Right a  -> a
