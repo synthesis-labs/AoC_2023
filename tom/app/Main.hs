@@ -27,6 +27,8 @@ import qualified Day23 (solve)
 import qualified Day24 (solve)
 import qualified Day25 (solve)
 
+import qualified Handy
+
 full :: IO ()
 full = do
   d01 <- Day01.solve
@@ -85,8 +87,13 @@ one = do
   d <- Day01.solve
   putStrLn $ show d
 
+play :: IO ()
+play = do
+  stuff <- Handy.get_puzzle_input 2022 1
+  putStrLn stuff
+
 -- Run with (with nice reloading etc)
 --   $ ghcid -r --height 20
 --
 main :: IO ()
-main = full
+main = one

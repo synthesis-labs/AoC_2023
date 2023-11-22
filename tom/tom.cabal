@@ -96,6 +96,12 @@ executable tom
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.0.0,
+                      bytestring,
+                      directory,
+                      http-conduit,
+                      http-client,
+                      http-client-tls,
+                      http-types,
                       string-interpolate,
                       parsec
 
