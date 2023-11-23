@@ -7,4 +7,4 @@ solve :: IO (Solution String)
 solve = do
   putStrLn "Workings of day 1 problems go here... 🚀"
   _ <- get_puzzle_input 2023 1
-  pure $ SolvedTwo 1 "dog" (Just "dog") "cat" Nothing
+  pure $ SolvedTwo 2023 1 "dog" (Just "dog") "cat" Nothing
