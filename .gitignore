@@ -1,0 +1,7 @@
+.vscode/launch.json
+
+pieter/2022-practice/**/.idea
+pieter/**/*.txt
+pieter/**/p*
+!pieter/**/p*.nim
+pieter/**/.nimcache
