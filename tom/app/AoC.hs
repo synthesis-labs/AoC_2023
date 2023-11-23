@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds   #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module AoC where
@@ -9,14 +10,18 @@ type Year = Int
 
 type Day = Int
 
+data RealAnswer a
+  = Unknown
+  | Revealed a
+
 data Solution a
   = NoSolution Year Day
-  | SolvedOne Year Day a (Maybe a)
-  | SolvedTwo Year Day a (Maybe a) a (Maybe a)
+  | SolvedOne Year Day a (RealAnswer a)
+  | SolvedTwo Year Day a (RealAnswer a) a (RealAnswer a)
 
-print_sol :: (Show a, Eq a) => a -> Maybe a -> String
-print_sol candidate Nothing = [i|#{show candidate} ❓|]
-print_sol candidate (Just answer) =
+print_sol :: (Show a, Eq a) => a -> RealAnswer a -> String
+print_sol candidate Unknown = [i|#{show candidate} ❓|]
+print_sol candidate (Revealed answer) =
   [i|#{show candidate} #{if candidate == answer
             then "✅"
             else "❌ (should be " <> show answer <> ")"
