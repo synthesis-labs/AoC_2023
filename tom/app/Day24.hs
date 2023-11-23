@@ -5,4 +5,4 @@ import           AoC
 solve :: IO (Solution Int)
 solve = do
   putStrLn "Workings of day 24 problems go here... 🚀"
-  pure $ NoSolution 24
+  pure $ NoSolution 2023 24

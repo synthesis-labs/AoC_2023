@@ -1,7 +1,18 @@
 module Handy where
 
-import           Control.Monad (join)
-import           System.IO     (IOMode (ReadMode), hGetContents, openFile)
+import           Control.Monad              (join)
+import qualified Data.ByteString.Char8      as Char8 (pack)
+import qualified Data.ByteString.Lazy.Char8 as LChar8 (unpack)
+import           Network.HTTP.Client        (httpLbs, newManager, parseRequest,
+                                             requestHeaders, responseBody,
+                                             responseStatus)
+import           Network.HTTP.Client.TLS    (tlsManagerSettings)
+import           Network.HTTP.Types.Header  (hCookie)
+import           Network.HTTP.Types.Status  (statusCode)
+import           System.Directory           (createDirectory,
+                                             doesDirectoryExist, doesFileExist)
+import           System.IO                  (IOMode (ReadMode), hGetContents,
+                                             openFile)
 
 -- read contents from a file, applying a simple transform
 read_data :: (String -> a) -> String -> IO a
@@ -75,3 +86,49 @@ takeUntilM predicate f (a:as) = do
       r <- takeUntilM predicate f as
       pure $ b : r
     else pure mempty
+
+-- Make parameters nicer
+type Year = Int
+
+type Day = Int
+
+-- Get the puzzle input, either from disk, or from http first time
+--
+get_puzzle_input :: Year -> Day -> IO String
+get_puzzle_input year day = do
+  let local_path = "data/"
+      local_file = "input_" <> show year <> "_" <> show day
+      download_url =
+        "https://adventofcode.com/" <>
+        show year <> "/day/" <> show day <> "/input"
+      cookie =
+        "session=53616c7465645f5ffb85d003f81aea0a5a54d8d36583ba38a34d13e493dde9c5fa6e0684c1799625e5417553896b6488092b2e9b2ee0d9b8be7bcb6713e0d0ff;"
+      downloadFile :: IO ()
+      downloadFile = do
+        putStrLn $
+          "Downloading input for first time (will be cached for future)!"
+        req <- parseRequest download_url
+        let req0 = req {requestHeaders = [(hCookie, Char8.pack cookie)]}
+        manager <- newManager tlsManagerSettings
+        resp <- httpLbs req0 manager
+        if statusCode (responseStatus resp) /= 200
+          then error $
+               "Failed to download input for year " <>
+               show year <> " day " <> show day
+          else do
+            let body :: String = LChar8.unpack $ responseBody resp
+            writeFile (local_path <> local_file) body
+            pure ()
+  -- Ensure the directory exists
+  _ <-
+    do exists <- doesDirectoryExist local_path
+       if not exists
+         then createDirectory local_path
+         else pure ()
+  -- Does the file exist?
+  _ <-
+    do exists <- doesFileExist (local_path <> local_file)
+       if not exists
+         then downloadFile
+         else pure ()
+  openFile (local_path <> local_file) ReadMode >>= hGetContents

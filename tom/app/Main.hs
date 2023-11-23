@@ -1,31 +1,34 @@
 module Main where
 
-import           AoC   ()
-import qualified Day01 (solve)
-import qualified Day02 (solve)
-import qualified Day03 (solve)
-import qualified Day04 (solve)
-import qualified Day05 (solve)
-import qualified Day06 (solve)
-import qualified Day07 (solve)
-import qualified Day08 (solve)
-import qualified Day09 (solve)
-import qualified Day10 (solve)
-import qualified Day11 (solve)
-import qualified Day12 (solve)
-import qualified Day13 (solve)
-import qualified Day14 (solve)
-import qualified Day15 (solve)
-import qualified Day16 (solve)
-import qualified Day17 (solve)
-import qualified Day18 (solve)
-import qualified Day19 (solve)
-import qualified Day20 (solve)
-import qualified Day21 (solve)
-import qualified Day22 (solve)
-import qualified Day23 (solve)
-import qualified Day24 (solve)
-import qualified Day25 (solve)
+import           AoC        ()
+import qualified Day01      (solve)
+import qualified Day02      (solve)
+import qualified Day02_2022 (solve)
+import qualified Day03      (solve)
+import qualified Day04      (solve)
+import qualified Day05      (solve)
+import qualified Day06      (solve)
+import qualified Day07      (solve)
+import qualified Day08      (solve)
+import qualified Day09      (solve)
+import qualified Day10      (solve)
+import qualified Day11      (solve)
+import qualified Day12      (solve)
+import qualified Day13      (solve)
+import qualified Day14      (solve)
+import qualified Day15      (solve)
+import qualified Day16      (solve)
+import qualified Day17      (solve)
+import qualified Day18      (solve)
+import qualified Day19      (solve)
+import qualified Day20      (solve)
+import qualified Day21      (solve)
+import qualified Day22      (solve)
+import qualified Day23      (solve)
+import qualified Day24      (solve)
+import qualified Day25      (solve)
+
+import qualified Handy
 
 full :: IO ()
 full = do
@@ -80,13 +83,23 @@ full = do
   d25 <- Day25.solve
   putStrLn $ show d25
 
+prev :: IO ()
+prev = do
+  d <- Day02_2022.solve
+  putStrLn $ show d
+
 one :: IO ()
 one = do
   d <- Day01.solve
   putStrLn $ show d
 
+play :: IO ()
+play = do
+  stuff <- Handy.get_puzzle_input 2022 1
+  putStrLn stuff
+
 -- Run with (with nice reloading etc)
 --   $ ghcid -r --height 20
 --
 main :: IO ()
-main = full
+main = prev

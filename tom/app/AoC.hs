@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds   #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module AoC where
@@ -5,27 +6,35 @@ module AoC where
 import           Data.String.Interpolate (i)
 import           Text.Printf             (printf)
 
-data Solution a
-  = NoSolution Int
-  | SolvedOne Int a (Maybe a)
-  | SolvedTwo Int a (Maybe a) a (Maybe a)
+type Year = Int
 
-print_sol :: (Show a, Eq a) => a -> Maybe a -> String
-print_sol candidate Nothing = [i|#{show candidate} ❓|]
-print_sol candidate (Just answer) =
+type Day = Int
+
+data RealAnswer a
+  = Unknown
+  | Revealed a
+
+data Solution a
+  = NoSolution Year Day
+  | SolvedOne Year Day a (RealAnswer a)
+  | SolvedTwo Year Day a (RealAnswer a) a (RealAnswer a)
+
+print_sol :: (Show a, Eq a) => a -> RealAnswer a -> String
+print_sol candidate Unknown = [i|#{show candidate} ❓|]
+print_sol candidate (Revealed answer) =
   [i|#{show candidate} #{if candidate == answer
             then "✅"
             else "❌ (should be " <> show answer <> ")"
         }|]
 
 instance (Show a, Eq a) => Show (Solution a) where
-  show (NoSolution day) =
-    [i|[SOLUTION] Day #{printf "%02d" day :: String}: None yet ... 🧐
+  show (NoSolution year day) =
+    [i|[SOLUTION] #{year} Day #{printf "%02d" day :: String}: None yet ... 🧐
     |] :: String
-  show (SolvedOne day q1 q1') =
-    [i|[SOLUTION] Day #{printf "%02d" day :: String}: A => #{print_sol q1 q1'}
+  show (SolvedOne year day q1 q1') =
+    [i|[SOLUTION] #{year} Day #{printf "%02d" day :: String}: A => #{print_sol q1 q1'}
     |]
-  show (SolvedTwo day q1 q1' q2 q2') =
-    [i|[SOLUTION] Day #{printf "%02d" day :: String}: A => #{print_sol q1 q1'}
+  show (SolvedTwo year day q1 q1' q2 q2') =
+    [i|[SOLUTION] #{year} Day #{printf "%02d" day :: String}: A => #{print_sol q1 q1'}
                    B => #{print_sol q2 q2'}
     |]
