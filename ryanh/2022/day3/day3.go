@@ -48,9 +48,9 @@ func solveSample() {
 	solve(itemsInRucksack)
 }
 
-func solveMain() {
+func part1() {
 	var itemsInRucksack = mapFileContents()
-	solve(itemsInRucksack)
+	solve(itemsInRucksack) // 7863
 }
 
 func solve(input []string) {
@@ -75,18 +75,15 @@ func solve(input []string) {
 		var compartment1Unique = getUniqueString(compartment1)
 		var compartment2Unique = getUniqueString(compartment2)
 
-		var duplicateFound = false
+	outer:
+		for j := 0; j < len(compartment1Unique); j++ {
+			for k := 0; k < len(compartment2Unique); k++ {
+				if compartment1Unique[j] == compartment2Unique[k] {
+					var duplicate = string(compartment1Unique[j])
+					var score = decodeCharacter(duplicate)
+					sum += score
 
-		if !duplicateFound {
-			for j := 0; j < len(compartment1Unique); j++ {
-				for k := 0; k < len(compartment2Unique); k++ {
-					if compartment1Unique[j] == compartment2Unique[k] {
-						var duplicate = string(compartment1Unique[j])
-						var score = decodeCharacter(duplicate)
-						sum += score
-
-						duplicateFound = true
-					}
+					break outer
 				}
 			}
 		}
@@ -95,6 +92,53 @@ func solve(input []string) {
 	fmt.Println(sum)
 }
 
+func solvePart2Sample() {
+	var itemsInRucksack = []string{"vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+		"PmmdzqPrVvPwwTWBwg", "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn", "ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"}
+
+	solvePart2(itemsInRucksack)
+}
+
+func part2() {
+	var itemsInRucksack = mapFileContents()
+	solvePart2(itemsInRucksack)
+}
+
+func solvePart2(input []string) {
+
+	var sum int
+	for i := 0; i < len(input); i += 3 {
+		var elfGroup = input[i : i+3]
+		var commomLetter = getCommonLetter(elfGroup)
+		var score = decodeCharacter(commomLetter)
+		sum += score
+	}
+
+	fmt.Println(sum)
+}
+
+func getCommonLetter(elfGroup []string) string {
+	commonCharacters := make(map[rune]int)
+
+	for _, str := range elfGroup {
+		set := make(map[rune]bool)
+		for _, char := range str {
+			set[char] = true
+		}
+		for char := range set {
+			commonCharacters[char]++
+		}
+	}
+
+	for char, count := range commonCharacters {
+		if count == len(elfGroup) {
+			return string(char)
+		}
+	}
+
+	return ""
+}
+
 func main() {
-	solveMain() // 7863
+	part2()
 }
