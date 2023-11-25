@@ -1,0 +1,3 @@
+[submodule "tom/advent_of_code"]
+	path = tom/advent_of_code
+	url = https://github.com/drshade/advent_of_code
