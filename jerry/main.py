@@ -44,14 +44,14 @@ def pre_order_recursive(root, result):
     result.append(root.data)
     pre_order_recursive(root.left_child, result)
     pre_order_recursive(root.right_child, result)
-    print(result)
+    return result
 
 
 
 
-
-print(pre_order_recursive(new_tree, []))
-
+print(
+pre_order_recursive(new_tree, [])
+)
 
 
 
