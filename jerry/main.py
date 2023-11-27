@@ -35,23 +35,10 @@ new_tree.left_child = leftchild
 new_tree.right_child = rightchild
 
 
-
-########### Pre-order Traversals ############
-
-def pre_order_recursive(root, result):
-    if not root:
-        return
-    result.append(root.data)
-    pre_order_recursive(root.left_child, result)
-    pre_order_recursive(root.right_child, result)
-    return result
-
-
-
-
 print(
-pre_order_recursive(new_tree, [])
+traversal.pre_order_recursive(new_tree, [])
 )
+
 
 
 
