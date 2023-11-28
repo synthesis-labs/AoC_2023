@@ -180,6 +180,71 @@ func part1() {
 	peekStacks(stacks)
 }
 
+func part2Sample() {
+
+	var stackMap = make(map[int]*Stack)
+
+	stackMap[1] = &Stack{}
+	stackMap[2] = &Stack{}
+	stackMap[3] = &Stack{}
+
+	stackMap[1].Push('Z')
+	stackMap[1].Push('N')
+
+	stackMap[2].Push('M')
+	stackMap[2].Push('C')
+	stackMap[2].Push('D')
+
+	stackMap[3].Push('P')
+
+	var moves []Move
+
+	// move 1 from 2 to 1
+	moves = append(moves, Move{moves: 1, from: 2, to: 1})
+
+	// move 3 from 1 to 3
+	moves = append(moves, Move{moves: 3, from: 1, to: 3})
+
+	// move 2 from 2 to 1
+	moves = append(moves, Move{moves: 2, from: 2, to: 1})
+
+	// move 1 from 1 to 2
+	moves = append(moves, Move{moves: 1, from: 1, to: 2})
+
+	solvePart2(stackMap, moves)
+
+	peekStacks(stackMap)
+}
+
+func part2() {
+	var content = mapFileContents()
+
+	var stacks = extractCrates(content[:9])
+
+	var moves = extractMoves(content[10:])
+
+	// This time we get a list of popped off values and push them back on in reverse order
+	solvePart2(stacks, moves)
+
+	// trick here is to sort the keys before printing since maps are unordered
+	peekStacks(stacks)
+}
+
+func solvePart2(stacks map[int]*Stack, moves []Move) {
+	for _, move := range moves {
+
+		var pops = make([]rune, move.moves)
+
+		for i := 0; i < move.moves; i++ {
+			pops[i] = stacks[move.from].Pop()
+		}
+
+		for i := len(pops) - 1; i >= 0; i-- {
+			stacks[move.to].Push(pops[i])
+		}
+	}
+}
+
 func main() {
-	part1()
+	part2()
 }
