@@ -39,9 +39,9 @@ print(
 traversal.pre_order_recursive(new_tree, [])
 )
 
+print(traversal.pre_order_iterative(new_tree, []))
 
-
-
+print(traversal.in_order_recurssive(new_tree, []))
 
 
 
