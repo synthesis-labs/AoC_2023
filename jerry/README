@@ -1,1 +1,18 @@
 Problem 1:
+"A tree is a data structure similar to a linked list but instead of each node pointing simply to the next node in 
+a linear fashion, each node points to a number of nodes"
+
+Operations on a binary_tree
+    1.Inserting an element into a tree
+    2. Deleting an element from a tree
+    3. Searching for an element
+    4.Traversing the tree
+
+    Classifying the Traversals
+        - Preorder Traversals
+            *each node is processed before processing the sub treee
+        - Inorder Traversals
+        - Postorder Traversals
+
+
+
