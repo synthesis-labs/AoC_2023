@@ -83,8 +83,7 @@ public abstract class TestBase
      */
     protected String getActualInput() throws IOException
     {
-
-        System.out.println(getPathToDayInputFile().normalize().toAbsolutePath().toString());
+        //System.out.println(getPathToDayInputFile().normalize().toAbsolutePath().toString());
         return Files.readString(getPathToDayInputFile(), StandardCharsets.UTF_8);
     }
 

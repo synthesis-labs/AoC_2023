@@ -5,6 +5,12 @@ plugins {
 group = 'io.nanovc.aoc2023'
 version = '1.0-SNAPSHOT'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 repositories {
     mavenCentral()
 }

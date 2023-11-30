@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/AoC_2023.iml" filepath="$PROJECT_DIR$/.idea/AoC_2023.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.iml" filepath="$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.main.iml" filepath="$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.test.iml" filepath="$PROJECT_DIR$/.idea/modules/aoc2023-lukaszmac.test.iml" />
     </modules>
   </component>
 </project>

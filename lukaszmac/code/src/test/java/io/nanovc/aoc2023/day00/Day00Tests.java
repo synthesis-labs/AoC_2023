@@ -1,6 +1,13 @@
 package io.nanovc.aoc2023.day00;
 
 import io.nanovc.aoc2023.TestBase;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.NavigableSet;
+import java.util.Scanner;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * --- Day 1: Calorie Counting ---
@@ -88,6 +95,18 @@ public class Day00Tests extends TestBase
     }
 
     /**
+     * This tests that the {@link #solve(String) solution}
+     * gets the {@link #getSampleAnswer() sample answer}
+     * by using the {@link #getSampleInput() sample input}.
+     */
+    @Test
+    @Override
+    public void testSample()
+    {
+        super.testSample();
+    }
+
+    /**
      * Gets the sample answer that was provided by the puzzle question.
      *
      * @return The sample answer that was provided by the puzzle question.
@@ -107,7 +126,66 @@ public class Day00Tests extends TestBase
     @Override
     public String solve(String input)
     {
-        return "24000";
+        // Keep a stack of the highest values:
+        TreeSet<Long> sortedTotals = new TreeSet<>();
+
+        // Keep a running total:
+        long total = 0;
+
+        // Work through the file:
+        try (Scanner scanner = new Scanner(input).useDelimiter("\\s"))
+        {
+            // Go through each line:
+            while (scanner.hasNextLine())
+            {
+                // Check whether we have a number or a new line:
+                if (scanner.hasNextLong())
+                {
+                    // We have a number to read.
+                    long nextAmount = scanner.nextLong();
+
+                    // Accumulate the total:
+                    total += nextAmount;
+
+                    System.out.println("nextAmount = " + nextAmount);
+                }
+                else
+                {
+                    // There is no number to read.
+                    // This is the end of the group.
+                    System.out.println("End of group. Total: " + total);
+
+                    // Save the total:
+                    sortedTotals.add(total);
+
+                    // Reset the total:
+                    total = 0;
+
+                    // Read the next line so that we can go on:
+                    scanner.nextLine();
+                }
+            }
+        }
+        // Now we have worked through all the totals.
+
+        // Get the largest total:
+        Long largestTotal = sortedTotals.getLast();
+
+        System.out.println("largestTotal = " + largestTotal);
+
+        return largestTotal.toString();
+    }
+
+    /**
+     * This tests that the {@link #solve(String) solution}
+     * gets the {@link #getActualAnswer() actual answer}
+     * by using the {@link #getActualInput() actual input}.
+     */
+    @Test
+    @Override
+    public void testSolution() throws IOException
+    {
+        super.testSolution();
     }
 
     /**
@@ -119,6 +197,6 @@ public class Day00Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "24000";
+        return "68802";
     }
 }
