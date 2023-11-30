@@ -5,3 +5,5 @@ pieter/**/*.txt
 pieter/**/p*
 !pieter/**/p*.nim
 pieter/**/.nimcache
+
+.idea
