@@ -1,6 +1,6 @@
 param([string] $InputFile)
 
-function Get-Number($pattern, $numbermap) {
+function Get-Number($pattern, $numbermap=@{}) {
     cat $InputFile | % {
         $matchlist = [regex]::Matches($_, $pattern);
         $key1 = ($matchlist | select -first 1).Groups[1].Value;
@@ -12,7 +12,7 @@ function Get-Number($pattern, $numbermap) {
 }
 
 function Solve-Part1 {
-    Get-Number "(\d)" @{}
+    Get-Number "(\d)"
 }
 
 function Solve-Part2 {
