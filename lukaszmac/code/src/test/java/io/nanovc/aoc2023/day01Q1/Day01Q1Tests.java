@@ -1,10 +1,8 @@
-package io.nanovc.aoc2023.day01;
+package io.nanovc.aoc2023.day01Q1;
 
 import io.nanovc.aoc2023.TestBase;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Website:
  * <a href="https://adventofcode.com/2023/day/1">Challenge</a>
  */
-public class Day01Tests extends TestBase
+public class Day01Q1Tests extends TestBase
 {
 
     /**
@@ -49,7 +47,7 @@ public class Day01Tests extends TestBase
     @Override
     protected String getDayLabel()
     {
-        return "Day 01";
+        return "Day 01 Q1";
     }
 
     /**
