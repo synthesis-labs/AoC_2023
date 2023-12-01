@@ -1,20 +1,28 @@
 module Day01 where
 
-import Data.List (sort)
+import Data.Char (isDigit)
+import Data.List (elemIndex)
+import Utils (startsWith)
+import Data.Maybe (fromMaybe)
 
--- Some aliases to make the recursive function clearer
-type InputLines = [String]
-type CurrentSum = Int
-type ElfSums = [Int]
+digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+reversedDigits = map reverse digits
 
-sumUntilEmptyLine :: InputLines -> CurrentSum -> ElfSums -> ElfSums
-sumUntilEmptyLine [i] cs es = read i + cs : es -- Last element of the list, sum and return appended to elf sums
-sumUntilEmptyLine ("":is) cs es = sumUntilEmptyLine is 0 (cs : es) -- We've reached an empty line, append current sum and restart at 0
-sumUntilEmptyLine (i:is) cs es = sumUntilEmptyLine is (read i + cs) es -- Sum the current number, append and recurse
+getFirstDigit :: String -> [String] -> String
+getFirstDigit [] ds = ""
+getFirstDigit str@(x:xs) ds
+  | isDigit x = [x]
+  | or [startsWith digit str | digit <- ds] = show (1 + fromMaybe 0 (elemIndex True [startsWith digit str | digit <- ds]))
+  | otherwise = getFirstDigit xs ds
+
+solveOne :: String -> Int
+solveOne s = read (getFirstDigit s digits ++ getFirstDigit (reverse s) reversedDigits)
 
 run :: IO ()
 run = do
-  contents <- lines <$> readFile "./data/day01" -- Use day01-test for testing
-  let elfSums = sumUntilEmptyLine contents 0 []
-  putStrLn $ "Top Elf calories: " ++ show (maximum elfSums)
-  putStrLn $ "Top three Elf calories: " ++ show (sum $ take 3 $ reverse (sort elfSums))
+  contents1 <- lines <$> readFile "./data/day01-test"
+  contents2 <- lines <$> readFile "./data/day01-test2"
+  let answer = sum [solveOne x | x <- contents1]
+  let answer2 = sum [solveOne x | x <- contents2]
+  putStrLn $ "Answer Q1 => " ++ show answer
+  putStrLn $ "Answer Q2 => " ++ show answer2
