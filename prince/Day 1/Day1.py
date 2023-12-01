@@ -28,4 +28,5 @@ def sum_list(list_of_lists):
     return total
 
 
+
 print(sum_list(read_input_file_and_generate_integer_list()))
