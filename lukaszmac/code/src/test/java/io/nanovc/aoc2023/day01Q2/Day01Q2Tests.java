@@ -1,43 +1,34 @@
-package io.nanovc.aoc2023.day01;
+package io.nanovc.aoc2023.day01Q2;
 
 import io.nanovc.aoc2023.TestBase;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * --- Day 1: Trebuchet?! ---
- * Something is wrong with global snow production, and you've been selected to take a look. The Elves have even given you a map; on it, they've used stars to mark the top fifty locations that are likely to be having problems.
+ * Your calculation isn't quite right. It looks like some of the digits are actually spelled out with letters: one, two, three, four, five, six, seven, eight, and nine also count as valid "digits".
  *
- * You've been doing this long enough to know that to restore snow operations, you need to check all fifty stars by December 25th.
+ * Equipped with this new information, you now need to find the real first and last digit on each line. For example:
  *
- * Collect stars by solving puzzles. Two puzzles will be made available on each day in the Advent calendar; the second puzzle is unlocked when you complete the first. Each puzzle grants one star. Good luck!
+ * two1nine
+ * eightwothree
+ * abcone2threexyz
+ * xtwone3four
+ * 4nineeightseven2
+ * zoneight234
+ * 7pqrstsixteen
+ * In this example, the calibration values are 29, 83, 13, 24, 42, 14, and 76. Adding these together produces 281.
  *
- * You try to ask why they can't just use a weather machine ("not powerful enough") and where they're even sending you ("the sky") and why your map looks mostly blank ("you sure ask a lot of questions") and hang on did you just say the sky ("of course, where do you think snow comes from") when you realize that the Elves are already loading you into a trebuchet ("please hold still, we need to strap you in").
- *
- * As they're making the final adjustments, they discover that their calibration document (your puzzle input) has been amended by a very young Elf who was apparently just excited to show off her art skills. Consequently, the Elves are having trouble reading the values on the document.
- *
- * The newly-improved calibration document consists of lines of text; each line originally contained a specific calibration value that the Elves now need to recover. On each line, the calibration value can be found by combining the first digit and the last digit (in that order) to form a single two-digit number.
- *
- * For example:
- *
- * 1abc2
- * pqr3stu8vwx
- * a1b2c3d4e5f
- * treb7uchet
- * In this example, the calibration values of these four lines are 12, 38, 15, and 77. Adding these together produces 142.
+ * What is the sum of all of the calibration values?
  *
  * Consider your entire calibration document. What is the sum of all of the calibration values?
  * Website:
- * <a href="https://adventofcode.com/2023/day/1">Challenge</a>
+ * <a href="https://adventofcode.com/2023/day/1#part2">Challenge</a>
  */
-public class Day01Tests extends TestBase
+public class Day01Q2Tests extends TestBase
 {
 
     /**
@@ -49,7 +40,7 @@ public class Day01Tests extends TestBase
     @Override
     protected String getDayLabel()
     {
-        return "Day 01";
+        return "Day 01 Q2";
     }
 
     /**
@@ -61,10 +52,13 @@ public class Day01Tests extends TestBase
     protected String getSampleInput()
     {
         return """
-                1abc2
-                pqr3stu8vwx
-                a1b2c3d4e5f
-                treb7uchet
+                two1nine
+                eightwothree
+                abcone2threexyz
+                xtwone3four
+                4nineeightseven2
+                zoneight234
+                7pqrstsixteen
                 """;
     }
 
@@ -76,7 +70,7 @@ public class Day01Tests extends TestBase
     @Override
     protected String getSampleAnswer()
     {
-        return "142";
+        return "281";
     }
 
     /**
@@ -90,6 +84,31 @@ public class Day01Tests extends TestBase
     {
         super.testSample();
     }
+
+    protected String decodeWordsIntoNumbers(String line)
+    {
+        StringBuilder result = new StringBuilder();
+
+        while (!line.isEmpty())
+        {
+            if      (line.startsWith("one"  )) { result.append("1"); }
+            else if (line.startsWith("two"  )) { result.append("2"); }
+            else if (line.startsWith("three")) { result.append("3"); }
+            else if (line.startsWith("four" )) { result.append("4"); }
+            else if (line.startsWith("five" )) { result.append("5"); }
+            else if (line.startsWith("six"  )) { result.append("6"); }
+            else if (line.startsWith("seven")) { result.append("7"); }
+            else if (line.startsWith("eight")) { result.append("8"); }
+            else if (line.startsWith("nine" )) { result.append("9"); }
+            else { result.append(line.charAt(0));  };
+
+            // Move to the next character:
+            line = line.substring(1);
+        }
+
+        return result.toString();
+    }
+
 
     /**
      * Solves the puzzle question with the given inputs.
@@ -118,9 +137,14 @@ public class Day01Tests extends TestBase
 
                 System.out.println("line = " + line);
 
+                // Replaced line:
+                var replacedLine = decodeWordsIntoNumbers(line);
+
+                System.out.println("replacedLine = " + replacedLine);
+
                 // Look for a match:
                 int secretValue = 0;
-                Matcher matcher = patternWithLastDigit.matcher(line);
+                Matcher matcher = patternWithLastDigit.matcher(replacedLine);
                 if (matcher.matches())
                 {
                     // We found a match.
@@ -138,7 +162,7 @@ public class Day01Tests extends TestBase
                 else
                 {
                     // Search for the other pattern:
-                    matcher = patternWithOneDigit.matcher(line);
+                    matcher = patternWithOneDigit.matcher(replacedLine);
                     if (matcher.matches())
                     {
                         // Get the digits of interest:
@@ -167,6 +191,6 @@ public class Day01Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "55712";
+        return "55413";
     }
 }
