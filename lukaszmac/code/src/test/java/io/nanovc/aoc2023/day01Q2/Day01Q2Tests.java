@@ -91,16 +91,19 @@ public class Day01Q2Tests extends TestBase
 
         while (!line.isEmpty())
         {
-            if      (line.startsWith("one"  )) { line = line.substring("one"  .length()); result.append("1"); }
-            else if (line.startsWith("two"  )) { line = line.substring("two"  .length()); result.append("2"); }
-            else if (line.startsWith("three")) { line = line.substring("three".length()); result.append("3"); }
-            else if (line.startsWith("four" )) { line = line.substring("four" .length()); result.append("4"); }
-            else if (line.startsWith("five" )) { line = line.substring("five" .length()); result.append("5"); }
-            else if (line.startsWith("six"  )) { line = line.substring("six"  .length()); result.append("6"); }
-            else if (line.startsWith("seven")) { line = line.substring("seven".length()); result.append("7"); }
-            else if (line.startsWith("eight")) { line = line.substring("eight".length()); result.append("8"); }
-            else if (line.startsWith("nine" )) { line = line.substring("nine" .length()); result.append("9"); }
-            else { result.append(line.charAt(0)); line = line.substring(1); };
+            if      (line.startsWith("one"  )) { result.append("1"); }
+            else if (line.startsWith("two"  )) { result.append("2"); }
+            else if (line.startsWith("three")) { result.append("3"); }
+            else if (line.startsWith("four" )) { result.append("4"); }
+            else if (line.startsWith("five" )) { result.append("5"); }
+            else if (line.startsWith("six"  )) { result.append("6"); }
+            else if (line.startsWith("seven")) { result.append("7"); }
+            else if (line.startsWith("eight")) { result.append("8"); }
+            else if (line.startsWith("nine" )) { result.append("9"); }
+            else { result.append(line.charAt(0));  };
+
+            // Move to the next character:
+            line = line.substring(1);
         }
 
         return result.toString();
@@ -188,6 +191,6 @@ public class Day01Q2Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "55445";
+        return "55413";
     }
 }
