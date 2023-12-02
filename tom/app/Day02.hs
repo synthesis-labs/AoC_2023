@@ -4,8 +4,8 @@ import           AoC
 import           Control.Monad (join)
 import           Handy         (WhichPuzzleInput (..), get_puzzle_input)
 import           Parsing       (run_parser)
-import           Text.Parsec   (Parsec, choice, digit, many1, newline, optional,
-                                string, (<|>))
+import           Text.Parsec   (Parsec, char, choice, digit, many1, newline,
+                                optional, string, (<|>))
 
 type Round = [(Colour, Int)]
 
@@ -30,18 +30,15 @@ parse_colour = do
 
 parse_round :: Parsec String () Round
 parse_round = do
-  round' :: [(Colour, Int)] <-
-    many1 $ do
-      count <- read <$> many1 digit <* string " "
-      colour <- parse_colour <* (optional $ string ", ")
-      pure (colour, count)
-  _ <- optional ((newline *> pure "") <|> string "; ")
-  pure round'
+  many1 $ do
+    count <- read <$> many1 digit <* char ' '
+    colour <- parse_colour <* (optional $ string ", ")
+    pure (colour, count) <* (optional $ string "; ")
 
 parse_game :: Parsec String () Game
 parse_game = do
   number <- string "Game " *> (read <$> many1 digit)
-  rounds <- string ": " *> many1 parse_round
+  rounds <- string ": " *> many1 parse_round <* optional newline
   pure $ Game number rounds
 
 valid :: Round -> Bool
