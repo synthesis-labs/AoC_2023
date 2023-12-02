@@ -11,6 +11,13 @@ func mapFileContents() []string {
 	return sections
 }
 
+type Node struct {
+	Value       string
+	IsDirectory bool
+	IsFile      bool
+	Children    []*Node
+}
+
 func part1Samples() {
 
 	var example = `$ cd /
@@ -38,6 +45,15 @@ func part1Samples() {
 	7214296 k`
 
 	var contents = strings.Split(example, "\n")
+
+	//lsFlag := false
+	depth := 1
+
+	previousDirectory := '/'
+	currentDirectory := '/'
+
+	root := &Node{Value: fmt.Sprintf("dir %c", currentDirectory), IsDirectory: true, IsFile: false}
+
 	for _, line := range contents {
 		var output = strings.TrimSpace(line)
 
@@ -45,17 +61,55 @@ func part1Samples() {
 			// command
 			if strings.Contains(output, "cd /") {
 				// reset to root
+				depth = 1
 			} else if strings.Contains(output, "cd ..") {
 				// go up one level
+				depth--
 			} else if strings.Contains(output, "cd") {
 				// go down one level
+				previousDirectory = currentDirectory
+				currentDirectory = rune(output[len(output)-1])
+				depth++
+				//createDirectoryNode(root, depth, output, currentDirectory)
 			} else if strings.Contains(output, "ls") {
 				// list contents
+				//lsFlag = true
 			}
 		} else if strings.HasPrefix(output, "dir") {
 			// directory
+			// return parent node
+			createDirectoryNode(root, depth, output, currentDirectory, previousDirectory)
 		} else {
 			// file
+			// send in parent node
+			//createNode(root, depth, output, false, true)
+		}
+	}
+
+	// recurse(root, 1)
+	//printTreeRecursive(root, 1)
+}
+
+func createDirectoryNode(root *Node, depth int, value string, currentDirectory rune, previousDirectory rune) {
+
+	if depth == 1 {
+		var directory = &Node{Value: value, IsDirectory: true, IsFile: false}
+		root.Children = append(root.Children, directory)
+	}
+
+	if depth == 2 {
+		var directory = &Node{Value: value, IsDirectory: true, IsFile: false}
+		root.Children = append(root.Children, directory)
+	}
+
+	fmt.Println(string(currentDirectory), string(previousDirectory))
+}
+
+func printTreeRecursive(root *Node, depth int) {
+	for _, child := range root.Children {
+		fmt.Println(child.Value, "=>", depth)
+		if child.Children != nil {
+			printTreeRecursive(child, depth+1)
 		}
 	}
 }
