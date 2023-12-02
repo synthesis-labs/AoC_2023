@@ -39,4 +39,33 @@ public class Advent_Day_1_Tests {
 
         assertEquals(54338, calibrationValuesSum);
     }
+
+    @Test
+    public void Day1_Solution2_Test_SampleData(){
+        Advent_Day_1 advent_day_1 = new Advent_Day_1();
+
+        ArrayList<String> sampleData = new ArrayList<String>();
+        sampleData.add("two1nine");
+        sampleData.add("eightwothree");
+        sampleData.add("abcone2threexyz");
+        sampleData.add("xtwone3four");
+        sampleData.add("4nineeightseven2");
+        sampleData.add("zoneight234");
+        sampleData.add("7pqrstsixteen");
+
+        int calibrationValuesSum = advent_day_1.Day1_Solution2(sampleData);
+
+        assertEquals(281, calibrationValuesSum);
+    }
+
+    @Test
+    public void Day1_Solution2_Test_RealData() throws IOException {
+        Advent_Day_1 advent_day_1 = new Advent_Day_1();
+
+        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day_1_Data.txt"));
+
+        int calibrationValuesSum = advent_day_1.Day1_Solution2(data);
+
+        assertEquals(54338, calibrationValuesSum);
+    }
 }
