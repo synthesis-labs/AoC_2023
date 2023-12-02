@@ -3,34 +3,36 @@ package io.nanovc.aoc2023.day01Q1;
 import io.nanovc.aoc2023.TestBase;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * --- Day 1: Trebuchet?! ---
  * Something is wrong with global snow production, and you've been selected to take a look. The Elves have even given you a map; on it, they've used stars to mark the top fifty locations that are likely to be having problems.
- *
+ * <p>
  * You've been doing this long enough to know that to restore snow operations, you need to check all fifty stars by December 25th.
- *
+ * <p>
  * Collect stars by solving puzzles. Two puzzles will be made available on each day in the Advent calendar; the second puzzle is unlocked when you complete the first. Each puzzle grants one star. Good luck!
- *
+ * <p>
  * You try to ask why they can't just use a weather machine ("not powerful enough") and where they're even sending you ("the sky") and why your map looks mostly blank ("you sure ask a lot of questions") and hang on did you just say the sky ("of course, where do you think snow comes from") when you realize that the Elves are already loading you into a trebuchet ("please hold still, we need to strap you in").
- *
+ * <p>
  * As they're making the final adjustments, they discover that their calibration document (your puzzle input) has been amended by a very young Elf who was apparently just excited to show off her art skills. Consequently, the Elves are having trouble reading the values on the document.
- *
+ * <p>
  * The newly-improved calibration document consists of lines of text; each line originally contained a specific calibration value that the Elves now need to recover. On each line, the calibration value can be found by combining the first digit and the last digit (in that order) to form a single two-digit number.
- *
+ * <p>
  * For example:
- *
+ * <p>
  * 1abc2
  * pqr3stu8vwx
  * a1b2c3d4e5f
  * treb7uchet
  * In this example, the calibration values of these four lines are 12, 38, 15, and 77. Adding these together produces 142.
- *
+ * <p>
  * Consider your entire calibration document. What is the sum of all of the calibration values?
  * Website:
  * <a href="https://adventofcode.com/2023/day/1">Challenge</a>
@@ -132,8 +134,7 @@ public class Day01Q1Tests extends TestBase
 
                     // Compile the secret value:
                     secretValue = Integer.parseInt(firstDigit + lastDigit);
-                }
-                else
+                } else
                 {
                     // Search for the other pattern:
                     matcher = patternWithOneDigit.matcher(line);
@@ -166,5 +167,85 @@ public class Day01Q1Tests extends TestBase
     protected String getActualAnswer()
     {
         return "55712";
+    }
+
+    public static class Solution1Tests extends Day01Q1Tests
+    {
+        @Override
+        public String solve(String input)
+        {
+            // Work through the file:
+            try (Scanner scanner = new Scanner(input))
+            {
+                // Keep a running total:
+                int total = 0;
+
+                // Define the pattern to search for:
+                var patternWithOneDigit = Pattern.compile("^[a-zA-Z]*(?<FirstDigit>\\d).*[a-zA-Z]*$");
+                var patternWithLastDigit = Pattern.compile("^[a-zA-Z]*(?<FirstDigit>\\d).*[a-zA-Z]*(?<LastDigit>\\d)[a-zA-Z]*$");
+
+                // Find the next pattern:
+                while (scanner.hasNextLine())
+                {
+                    // Get the next line:
+                    var line = scanner.nextLine();
+
+                    System.out.println("line = " + line);
+
+                    // Look for a match:
+                    int secretValue = 0;
+                    Matcher matcher = patternWithLastDigit.matcher(line);
+                    if (matcher.matches())
+                    {
+                        // We found a match.
+
+                        // Get the digits of interest:
+                        var firstDigit = matcher.group("FirstDigit");
+                        var lastDigit = matcher.group("LastDigit");
+
+                        System.out.println("firstDigit = " + firstDigit);
+                        System.out.println("lastDigit = " + lastDigit);
+
+                        // Compile the secret value:
+                        secretValue = Integer.parseInt(firstDigit + lastDigit);
+                    } else
+                    {
+                        // Search for the other pattern:
+                        matcher = patternWithOneDigit.matcher(line);
+                        if (matcher.matches())
+                        {
+                            // Get the digits of interest:
+                            var firstDigit = matcher.group("FirstDigit");
+
+                            System.out.println("firstDigit = " + firstDigit);
+
+                            // Compile the secret value:
+                            secretValue = Integer.parseInt(firstDigit + firstDigit);
+                        }
+                    }
+
+                    // Accumulate the total:
+                    total += secretValue;
+                }
+                return Integer.toString(total);
+            }
+        }
+    }
+
+    public static class Solution2Tests extends Day01Q1Tests
+    {
+        @Override
+        public String solve(String input)
+        {
+            var parts = input.split("\\n");
+            Integer result = Arrays.stream(parts)
+                    .map(s -> s.replaceAll("\\D", ""))
+                    .map(s -> s.length() == 1 ? s + s : s)
+                    .map(s -> s.replaceAll("\\B.\\B", ""))
+                    .map(Integer::parseInt)
+                    .reduce(0, Integer::sum);
+
+            return result.toString();
+        }
     }
 }
