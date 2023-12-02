@@ -11,14 +11,6 @@ function Get-Number($pattern, $numbermap=@{}) {
     } | measure -Sum | select -ExpandProperty Sum
 }
 
-function Solve-Part1 {
-    Get-Number "(\d)"
-}
-
-function Solve-Part2 {
-    $numbers = @{ one = 1; two = 2; three = 3; four = 4; five = 5; six = 6; seven = 7; eight = 8; nine = 9; }
-    Get-Number "(?=(\d|one|two|three|four|five|six|seven|eight|nine))" $numbers
-}
-
-echo "Part 1: $(Solve-Part1)"
-echo "Part 2: $(Solve-Part2)"
+$numbers = @{ one = 1; two = 2; three = 3; four = 4; five = 5; six = 6; seven = 7; eight = 8; nine = 9; }
+echo "Part 1: $(Get-Number "(\d)")"
+echo "Part 2: $(Get-Number "(?=(\d|one|two|three|four|five|six|seven|eight|nine))" $numbers)"
