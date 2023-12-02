@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use std::collections::BTreeMap;
 
 pub fn day01p1(){
     let mut calibation_val:i32 = 0;
@@ -70,21 +69,21 @@ pub fn day01p2(){
                 for num in i_vec.iter() {
                     if line.find(num).is_some(){
                         let index = line.find(num).unwrap() as i32;
-                        let lastIndex = line.rfind(num).unwrap() as i32;
+                        let last_index = line.rfind(num).unwrap() as i32;
                         //we know it exists, so now we iterate over the line to find the index of the sub-string.
                         if current_first == -1 {
                             first_value = num;
                             last_value= num;
                             current_first = index;
-                            current_last = lastIndex;
+                            current_last = last_index;
                         }
                         if index < current_first {
                             first_value = num;
                             current_first = index;
                         }
-                        if lastIndex > current_last {
+                        if last_index > current_last {
                             last_value = num;
-                            current_last = lastIndex;
+                            current_last = last_index;
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 
 mod days;
-mod models;
+pub mod models;
 pub mod utils;
 
 #[tokio::main]
