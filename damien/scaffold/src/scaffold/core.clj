@@ -1,6 +1,6 @@
 (ns scaffold.core
   (:gen-class)
-  (:require [scaffold.day1 :as day1]))
+  (:require [scaffold.day2 :as day2]))
 
 
 ; (use '[clojure.string :only (join split replace)])
