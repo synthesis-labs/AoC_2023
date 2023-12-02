@@ -5,8 +5,8 @@ function Get-Number($pattern, $numbermap=@{}) {
         $matchlist = [regex]::Matches($_, $pattern)
         $key1 = $matchlist.Count -eq 0 ? 0 : ($matchlist | select -first 1).Groups[1].Value;
         $key2 = $matchlist.Count -eq 0 ? 0 : ($matchlist | select -last 1).Groups[1].Value;
-        $first = $numbermap[$key1] ? $numbermap[$key1] : $key1;
-        $last = $numbermap[$key2] ? $numbermap[$key2] : $key2;
+        $first = $numbermap[$key1] ?? $key1;
+        $last = $numbermap[$key2] ?? $key2;
         [long]"$first$last"
     } | measure -Sum | select -ExpandProperty Sum
 }
