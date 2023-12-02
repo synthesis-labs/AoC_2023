@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Advent_Day_1 {
+public class Advent_Day1 {
 
-    public int Day1_Solution1(ArrayList<String> calibrationValues) {
+    public int Part1_CalculateCalibrationValuesSum(ArrayList<String> calibrationValues) {
         int calibrationSum = 0;
         for (String calibrationValue : calibrationValues) {
             Pattern pattern_oneDigit = Pattern.compile("^\\D*(?<onlyDigit>\\d)\\D*$");
@@ -37,7 +37,7 @@ public class Advent_Day_1 {
         return calibrationSum;
     }
 
-    public int Day1_Solution2(ArrayList<String> calibrationValues) {
+    public int Part2_CalculateCalibrationValuesSum(ArrayList<String> calibrationValues) {
         int calibrationSum = 0;
         String numberWords = "one|two|three|four|five|six|seven|eight|nine";
         for (String calibrationValue : calibrationValues) {
