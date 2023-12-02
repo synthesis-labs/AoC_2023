@@ -1,12 +1,12 @@
 use std::error::Error;
 
-use reqwest::header::COOKIE;
+use reqwest::{header::COOKIE, Client};
 
 pub async fn get_question_data(year: i32, day: i32) -> Result<String, Box<dyn Error>> {
-    let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
-    let cookie = std::env::var("COOKIE").expect("COOKIE must be set.");
+    let url: String = format!("https://adventofcode.com/{year}/day/{day}/input");
+    let cookie: String = std::env::var("COOKIE").expect("COOKIE must be set.");
 
-    let client = reqwest::Client::new();
+    let client: Client = reqwest::Client::new();
 
     let response: String = client
         .get(url)
