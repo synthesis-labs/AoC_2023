@@ -1,6 +1,7 @@
 module Handy where
 
 import           Control.Monad              (join)
+import qualified Data.Set as Set
 import qualified Data.ByteString.Char8      as Char8 (pack)
 import qualified Data.ByteString.Lazy.Char8 as LChar8 (unpack)
 import           Data.String.Interpolate    (i)
@@ -87,6 +88,9 @@ takeUntilM predicate f (a:as) = do
       r <- takeUntilM predicate f as
       pure $ b : r
     else pure mempty
+
+unique :: (Eq a, Ord a) => [a] -> [a]
+unique = Set.toList . Set.fromList
 
 -- Make parameters nicer
 type Year = Int
