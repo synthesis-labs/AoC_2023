@@ -21,3 +21,9 @@ run_parser parser input =
   case runParser parser () "(input)" input of
     Left err -> error $ "A terribly unfortunate parsing error: " ++ (show err)
     Right a  -> a
+
+run_parser_with_state :: Parsec String s a -> s -> String -> a
+run_parser_with_state parser start_state input =
+  case runParser parser start_state "(input)" input of
+    Left err -> error $ "A terribly unfortunate parsing error: " ++ (show err)
+    Right a  -> a
