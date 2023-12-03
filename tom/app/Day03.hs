@@ -4,7 +4,7 @@ import           AoC
 import           Control.Monad (join)
 import qualified Data.Map      as Map
 import qualified Data.Set      as Set
-import           Handy         (WhichPuzzleInput (..), get_puzzle_input)
+import           Handy         (WhichPuzzleInput (..), get_puzzle_input, unique)
 import           Parsing       (run_parser, run_parser_with_state)
 import           Text.Parsec   (Parsec, anyChar, char, choice, digit, getState,
                                 letter, many1, newline, optional, setState,
@@ -61,86 +61,71 @@ parse_scheme = do
     (optional parse_newline)
   pure $ Scheme elements
 
-type SchemeMap = Map.Map Position Element
-
-build_scheme_map :: Scheme -> SchemeMap
-build_scheme_map (Scheme scheme) = Map.fromList $ join $ fmap f scheme
-  where
-    f (element, positions) = fmap (\pos -> (pos, element)) positions
-
 adjacent :: Position -> Position -> Bool
 adjacent (x, y) (a, b) = (abs (x - a) <= 1) && (abs (y - b) <= 1)
 
+symbols :: Scheme -> [Position]
+symbols (Scheme scheme) =
+  concatMap
+    (\(ele, pos's) ->
+       case ele of
+         Symbol _ -> pos's
+         _        -> [])
+    scheme
+
+specific_symbols :: Char -> Scheme -> [Position]
+specific_symbols matching (Scheme scheme) =
+  concatMap
+    (\(ele, pos's) ->
+       case ele of
+         Symbol matching -> pos's
+         _               -> [])
+    scheme
+
+parts :: Scheme -> [(Int, [Position])]
+parts (Scheme scheme) =
+  concatMap
+    (\(ele, pos's) ->
+       case ele of
+         PartNumber num -> [(num, pos's)]
+         _              -> [])
+    scheme
+
+solve1 :: Scheme -> Int
 solve1 scheme@(Scheme flat_scheme)
-  -- All the part numbers that are adjacent to a symbol, add them up
+  -- Find all the part numbers that are adjacent to symbols
  =
-  let map = build_scheme_map scheme
-      -- Can't rely on the scheme map for dealing with part numbers, because
-      -- they have multiple positions, some of which are adjacent to symbols
-      part_numbers :: [(Int, [Position])] =
-        concatMap
-          (\(pos, pos's) ->
-             case pos of
-               PartNumber num -> [(num, pos's)]
-               _              -> []) $
-        flat_scheme
-      -- Symbols take up only a single space, so this is safe (?)
-      symbols =
-        concatMap
-          (\(pos, ele) ->
-             case ele of
-               Symbol _ -> [pos]
-               _        -> []) $
-        Map.toList map
-      -- Find all the part numbers that are adjacent to symbols
-      part_numbers_adjacent_to_symbols :: [(Int, [Position])] =
+  let part_numbers_adjacent_to_symbols :: [(Int, [Position])] =
         filter
           (\(num, pos's) ->
-             any
-               (\pos -> any (\symbol_pos -> adjacent pos symbol_pos) symbols)
-               pos's)
-          part_numbers
-   in sum $ (\(num, _) -> num) <$> part_numbers_adjacent_to_symbols
+             any (\pos -> any (adjacent pos) (symbols scheme)) pos's)
+          (parts scheme)
+   in sum $ fst <$> part_numbers_adjacent_to_symbols
 
 solve2 :: Scheme -> Int
 solve2 scheme@(Scheme flat_scheme)
   -- Get all the gears (have exactly two part numbers adjacent to them) and add
-  -- them up
+  -- up their "ratios" (part1 * part2)
  =
-  let map = build_scheme_map scheme
-      part_numbers :: [(Int, [Position])] =
+  let gears :: [(Position, Int)]
+      gears =
         concatMap
-          (\(pos, pos's) ->
-             case pos of
-               PartNumber num -> [(num, pos's)]
-               _              -> []) $
-        flat_scheme
-      -- Get all symbols which have '*' as their value
-      gears :: [Position] =
-        concatMap
-          (\(pos, pos's) ->
-             case pos of
-               Symbol '*' -> pos's
-               _          -> []) $
-        flat_scheme
-      -- Get all the part numbers that are adjacent to gears
-      gears_with_adjacent_part_numbers :: [(Position, Int)]
-      gears_with_adjacent_part_numbers =
-        concatMap
-          (\(gear :: Position) ->
+          (\(possible_gear :: Position) ->
              let adjacent_parts :: [Int] =
+                   unique $
                    concatMap
                      (\(num :: Int, pos :: [Position]) ->
-                        if any (\pos' -> adjacent pos' gear) pos
+                        if any (\pos' -> adjacent pos' possible_gear) pos
                           then [num]
                           else [])
-                     part_numbers
-                 uniq_parts = Set.toList $ Set.fromList $ adjacent_parts
-              in if length uniq_parts == 2
-                   then [(gear, ((uniq_parts !! 0) * (uniq_parts !! 1)))]
-                   else [])
-          gears
-   in sum $ snd <$> gears_with_adjacent_part_numbers
+                     (parts scheme)
+              -- If exactly two parts, then calculate their "ratio"
+              -- otherwise it's not a gear
+              in case adjacent_parts of
+                   (part_1:part_2:[]) -> [(possible_gear, part_1 * part_2)]
+                   _                  -> [])
+          (specific_symbols '*' scheme)
+   in sum $ snd <$> gears
 
 solve :: IO (Solution Int)
 solve = do
