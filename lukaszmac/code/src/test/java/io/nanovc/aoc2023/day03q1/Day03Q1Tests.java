@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * --- Day 3: Gear Ratios ---
@@ -175,7 +176,8 @@ public abstract class Day03Q1Tests extends TestBase
 
             /**
              * Creates a new line buffer.
-             * @param maxLines This is the maximum number of lines that this buffer holds before it starts processing the sliding kernel window.
+             *
+             * @param maxLines      This is the maximum number of lines that this buffer holds before it starts processing the sliding kernel window.
              * @param windowPadding The padding size for the sliding kernel window. The actual width of the window is windowPadding + 1 + windowPadding, because the padding is the size around the sampling kernel size.
              */
             public LineBuffer(int maxLines, int windowPadding)
@@ -240,9 +242,8 @@ public abstract class Day03Q1Tests extends TestBase
 
                     // Slide across:
                     for (
-                            int start = 0,
-                            offset = start,
-                            max = this.lines.get(0).length() - (this.windowPadding << 1) - 1;
+                            int offset = 0,
+                            max = this.lines.get(0).length() - this.windowPadding; // Size of the line in the buffer less the right side of the padding.
                             offset < max;
                             offset++
                     )
@@ -266,48 +267,71 @@ public abstract class Day03Q1Tests extends TestBase
          * @param sampleOffset  The relative offset from the left edge of the kernel window where we sample the middle of the kernel.
          * @param sampleLine    The relative offset from the top of the kernel window where we sample the middle of the kernel.
          */
-        public record KernelWindow(LineBuffer lineBuffer, int offset, int windowPadding, int sampleOffset, int sampleLine)
+        public record KernelWindow(LineBuffer lineBuffer, int offset, int windowPadding, int sampleOffset,
+                                   int sampleLine)
         {
             /**
              * The width of this kernel window.
+             *
              * @return The width of this kernel window.
              */
             public int width()
             {
-                return 1 + this.windowPadding << 1;
+                return 1 + (this.windowPadding << 1);
             }
 
             /**
              * Samples the kernel window at the given coordinates.
+             *
              * @param xOffsetFromLeft The offset from the left of the kernel window.
-             * @param yOffsetFromTop The offset from the top of the kernel window.
-             * @return The character at the given coordinate.
-             */
-            public char sampleChar(int xOffsetFromLeft, int yOffsetFromTop)
-            {
-                return lineBuffer.lines.get(yOffsetFromTop).charAt(this.offset + xOffsetFromLeft);
-            }
-
-            /**
-             * Samples the kernel window at the given coordinates.
-             * @param xOffsetFromLeft The offset from the left of the kernel window.
-             * @param yOffsetFromTop The offset from the top of the kernel window.
-             * @return The character at the given coordinate.
+             * @param yOffsetFromTop  The offset from the top of the kernel window.
+             * @return The character at the given coordinate. It returns a blank string if the coordinate is outside the window.
              */
             public String sample(int xOffsetFromLeft, int yOffsetFromTop)
             {
-                int index = this.offset + xOffsetFromLeft;
-                return lineBuffer.lines.get(yOffsetFromTop).substring(index, index + 1);
-            }
+                // Check the range:
+                if (yOffsetFromTop < 0 ||
+                    yOffsetFromTop >= this.lineBuffer().maxLines
+                ) return "";
 
+                // Get the line that we want:
+                String line = this.lineBuffer().lines.get(yOffsetFromTop);
+
+                // Get the index that we want:
+                int index = this.offset + xOffsetFromLeft;
+
+                // Make sure the index is in range:
+                if (index < 0 || index >= line.length()) return "";
+
+                // Get the character:
+                return line.substring(index, index + 1);
+            }
 
             /**
              * Samples the middle of the kernel.
+             *
              * @return Gets the middle of the kernel
              */
             public String sampleMiddleOfKernel()
             {
                 return sample(this.windowPadding(), this.lineBuffer().maxLines / 2);
+            }
+
+            /**
+             * Samples a range of characters on a line.
+             * @param xStart The start index to sample from.
+             * @param xEnd The end index (inclusive) to sample to.
+             * @param yOffset The offset to sample.
+             * @return The sampled region.
+             */
+            public String sampleRange(int xStart, int xEnd, int yOffset)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int i = xStart; i <= xEnd; i++)
+                {
+                    stringBuilder.append(this.sample(i, yOffset));
+                }
+                return stringBuilder.toString();
             }
 
             @Override
@@ -319,7 +343,7 @@ public abstract class Day03Q1Tests extends TestBase
                 {
                     for (int xOffset = 0, max = width(); xOffset < max; xOffset++)
                     {
-                        stringBuilder.append(sampleChar(xOffset, yOffset));
+                        stringBuilder.append(sample(xOffset, yOffset));
                     }
                     stringBuilder.append("\n");
                 }
@@ -339,6 +363,21 @@ public abstract class Day03Q1Tests extends TestBase
 
             // Accumulate the parts that touch a symbol:
             AtomicInteger total = new AtomicInteger();
+
+            // Define the patterns that we want:
+            var rightAlignedMatchPattern = Pattern.compile("\\d+$");
+            var leftAlignedMatchPattern = Pattern.compile("^\\d+");
+            var midConnectedPattern = Pattern.compile("^\\D+\\d+\\D+$");
+
+            var topLeftPattern     = Pattern.compile("(\\d+)\\D?$");
+            var midLeftPattern     = rightAlignedMatchPattern;
+            var bottomLeftPattern  = rightAlignedMatchPattern;
+            var topRightPattern    = Pattern.compile("^\\D?(\\d+)");
+            var midRightPattern    = leftAlignedMatchPattern;
+            var bottomRightPattern = leftAlignedMatchPattern;
+            var topMidPattern      = midConnectedPattern;
+            var bottomMidPattern   = midConnectedPattern;
+
 
             // Go through each line:
             for (int lineNumber = 0; lineNumber < lines.length; lineNumber++)
@@ -360,7 +399,70 @@ public abstract class Day03Q1Tests extends TestBase
                             if (middleOfKernel.matches("[!@#$%^&*()_+]"))
                             {
                                 // This is an interesting kernel.
-                                System.out.println("kernel = " + kernel);
+
+                                // Look for number matches in the following regions:
+
+                                // Top Left:
+                                // XXXX...
+                                // ...!...
+                                // .......
+
+                                // Top Right:
+                                // ...XXXX
+                                // ...!...
+                                // .......
+
+                                // Mid Left:
+                                // .......
+                                // XXX!...
+                                // .......
+
+                                // Mid Right:
+                                // .......
+                                // ...!XXX
+                                // .......
+
+                                // Bottom Left:
+                                // .......
+                                // ...!...
+                                // XXXX...
+
+                                // Bottom Right:
+                                // .......
+                                // ...!...
+                                // ...XXXX
+
+                                // Top Mid:
+                                // .XXXXX.
+                                // ...!...
+                                // .......
+
+                                // Bottom Mid:
+                                // .......
+                                // ...!...
+                                // .XXXXX.
+
+                                System.out.println("kernel = \n" + kernel);
+
+                                // Get the top left sample:
+                                var topLeftSample = kernel.sampleRange(0, KERNEL_PADDING_SIZE, 0);
+                                var topLeftMatcher = topLeftPattern.matcher(topLeftSample);
+                                if (topLeftMatcher.matches())
+                                {
+                                    int number = Integer.parseInt(topLeftMatcher.group(1));
+                                    total.accumulateAndGet(number, Integer::sum);
+                                }
+
+//                                // Get the top right sample:
+//                                var topRightSample = kernel.sampleRange(KERNEL_PADDING_SIZE - 1, kernel.width(), 0);
+//                                var topRightMatcher = topRightPattern.matcher(topRightSample);
+//                                if (topRightMatcher.matches())
+//                                {
+//                                    int number = Integer.parseInt(topRightMatcher.group(1));
+//                                    total.accumulateAndGet(number, Integer::sum);
+//                                }
+
+
                             }
                         }
                 );
