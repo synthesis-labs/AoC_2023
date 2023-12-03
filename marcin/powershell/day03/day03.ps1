@@ -2,17 +2,15 @@ param([string] $InputFile)
 
 function Get-Parts {
     $lines = cat $InputFile
-    $parts = for ($i = 0; $i -lt $lines.Length; $i++) { 
+    $(for ($i = 0; $i -lt $lines.Length; $i++) { 
         Get-Part $i $($lines.Length -1) $($lines[0].Length -1)
-    }
-    $parts
+    })
 }
 
 function Get-Part($rownum, $lastrow, $lastcol) {
     $above = [Math]::Max(0, $rownum - 1)
     $below = [Math]::Min($lastrow, $rownum + 1)
-    $matchlist = $lines[$rownum] | sls "(\d+)" -AllMatches | % { $_.Matches | % { @{ Number = $_.Value; Index = $_.Index } } }
-    $matchlist | % {
+    $lines[$rownum] | sls "(\d+)" -AllMatches | % { $_.Matches | % { @{ Number = $_.Value; Index = $_.Index } } } | % {
         $num = $_.Number
         $leftcol = $_.Index
         $rightcol = $leftcol + $num.Length - 1
@@ -39,17 +37,11 @@ function Get-Part($rownum, $lastrow, $lastcol) {
     } | ? IsPart
 }
 
-function Solve-Part1 {
-    $parts = Get-Parts
-    $parts | select -ExpandProperty Number | measure -Sum | select -ExpandProperty Sum
-}
-
 function Solve-Part2 {  
-    $parts = Get-Parts
-    $gearParts = $parts | ? GearPart
+    $gearParts = Get-Parts | ? GearPart
     $gearlinks = $gearParts | select -ExpandProperty GearPositions | group | ? Count -eq 2 | select -ExpandProperty Name
     $gearlinks | % {($gearParts | ? GearPositions -eq $_ | % { $_.Number }) -join "*" | iex } | measure -Sum | select -ExpandProperty Sum
 }
 
-Solve-Part1
-Solve-Part2
+echo "Part 1: $(Get-Parts | select -ExpandProperty Number | measure -Sum | select -ExpandProperty Sum)"
+echo "Part 2: $(Solve-Part2)"
