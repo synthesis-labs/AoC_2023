@@ -1,9 +1,11 @@
-package io.nanovc.aoc2023.day03q1;
+package io.nanovc.aoc2023.day03q2;
 
 import io.nanovc.aoc2023.TestBase;
+import io.nanovc.aoc2023.day03q1.Day03Q1Tests;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -11,21 +13,19 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * --- Day 3: Gear Ratios ---
- * You and the Elf eventually reach a gondola lift station; he says the gondola lift will take you up to the water source, but this is as far as he can bring you. You go inside.
- * <p>
- * It doesn't take long to find the gondolas, but there seems to be a problem: they're not moving.
- * <p>
- * "Aaah!"
- * <p>
- * You turn around to see a slightly-greasy Elf with a wrench and a look of surprise. "Sorry, I wasn't expecting anyone! The gondola lift isn't working right now; it'll still be a while before I can fix it." You offer to help.
- * <p>
- * The engineer explains that an engine part seems to be missing from the engine, but nobody can figure out which one. If you can add up all the part numbers in the engine schematic, it should be easy to work out which part is missing.
- * <p>
- * The engine schematic (your puzzle input) consists of a visual representation of the engine. There are lots of numbers and symbols you don't really understand, but apparently any number adjacent to a symbol, even diagonally, is a "part number" and should be included in your sum. (Periods (.) do not count as a symbol.)
- * <p>
- * Here is an example engine schematic:
- * <p>
+ * --- Part Two ---
+ * The engineer finds the missing part and installs it in the engine! As the engine springs to life, you jump in the closest gondola, finally ready to ascend to the water source.
+ *
+ * You don't seem to be going very fast, though. Maybe something is still wrong? Fortunately, the gondola has a phone labeled "help", so you pick it up and the engineer answers.
+ *
+ * Before you can explain the situation, she suggests that you look out the window. There stands the engineer, holding a phone in one hand and waving with the other. You're going so slowly that you haven't even left the station. You exit the gondola.
+ *
+ * The missing part wasn't the only issue - one of the gears in the engine is wrong. A gear is any * symbol that is adjacent to exactly two part numbers. Its gear ratio is the result of multiplying those two numbers together.
+ *
+ * This time, you need to find the gear ratio of every gear and add them all up so that the engineer can figure out which gear needs to be replaced.
+ *
+ * Consider the same engine schematic again:
+ *
  * 467..114..
  * ...*......
  * ..35..633.
@@ -36,14 +36,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * ......755.
  * ...$.*....
  * .664.598..
- * In this schematic, two numbers are not part numbers because they are not adjacent to a symbol: 114 (top right) and 58 (middle right). Every other number is adjacent to a symbol and so is a part number; their sum is 4361.
- * <p>
- * Of course, the actual engine schematic is much larger. What is the sum of all of the part numbers in the engine schematic?
- * <p>
+ * In this schematic, there are two gears. The first is in the top left; it has part numbers 467 and 35, so its gear ratio is 16345. The second gear is in the lower right; its gear ratio is 451490. (The * adjacent to 617 is not a gear because it is only adjacent to one part number.) Adding up all of the gear ratios produces 467835.
+ *
+ * What is the sum of all of the gear ratios in your engine schematic?
+ *
  * Website:
- * <a href="https://adventofcode.com/2023/day/3">Challenge</a>
+ * <a href="https://adventofcode.com/2023/day/3#part2">Challenge</a>
  */
-public abstract class Day03Q1Tests extends TestBase
+public abstract class Day03Q2Tests extends TestBase
 {
 
     /**
@@ -55,7 +55,7 @@ public abstract class Day03Q1Tests extends TestBase
     @Override
     protected String getDayLabel()
     {
-        return "Day 03 Q1";
+        return "Day 03 Q2";
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class Day03Q1Tests extends TestBase
     @Override
     protected String getSampleAnswer()
     {
-        return "4361";
+        return "467835";
     }
 
     /**
@@ -112,7 +112,7 @@ public abstract class Day03Q1Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "538046";
+        return "81709807";
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class Day03Q1Tests extends TestBase
      * <p>
      * We want to create a sliding window buffer so that we can stream the data across.
      */
-    public static class Solution1Tests extends Day03Q1Tests
+    public static class Solution1Tests extends Day03Q2Tests
     {
         /**
          * We notice in the window that we don't get part numbers wider than 3 digits.
@@ -158,7 +158,7 @@ public abstract class Day03Q1Tests extends TestBase
         /**
          * The pattern for the symbols to match a kernel around.
          */
-        public static final String SYMBOL_PATTERN = "[!@#$%^&*()_+=~\\-/\\\\]";
+        public static final String SYMBOL_PATTERN = "[*]";
 
         /**
          * This is a buffer that takes in the lines, one line at a time and then waits until it can process a run of the kernel sliding across the lines.
@@ -240,7 +240,7 @@ public abstract class Day03Q1Tests extends TestBase
              *
              * @param kernelWindowConsumer The callback that handles the sliding kernel window.
              */
-            public void handleSlidingKernelWindow(Consumer<KernelWindow> kernelWindowConsumer)
+            public void handleSlidingKernelWindow(Consumer<Solution1Tests.KernelWindow> kernelWindowConsumer)
             {
                 // Check whether we are ready to handle the sliding window:
                 if (hasEnoughLinesToStartProcessing())
@@ -256,7 +256,7 @@ public abstract class Day03Q1Tests extends TestBase
                     )
                     {
                         // Create a kernel window:
-                        var kernel = new KernelWindow(this, xOffset, this.windowPadding);
+                        var kernel = new Solution1Tests.KernelWindow(this, xOffset, this.windowPadding);
 
                         // Allow the callback to handle the sliding kernel window:
                         kernelWindowConsumer.accept(kernel);
@@ -273,7 +273,7 @@ public abstract class Day03Q1Tests extends TestBase
          * @param offset        The offset (left edge) from the start of the line buffer.
          * @param windowPadding The padding size for the sliding kernel window. The actual width of the window is windowPadding + 1 + windowPadding, because the padding is the size around the sampling kernel size.
          */
-        public record KernelWindow(LineBuffer lineBuffer, int offset, int windowPadding)
+        public record KernelWindow(Solution1Tests.LineBuffer lineBuffer, int offset, int windowPadding)
         {
             /**
              * The width of this kernel window.
@@ -367,7 +367,7 @@ public abstract class Day03Q1Tests extends TestBase
             String[] lines = input.split("\\n");
 
             // Create the line buffer that we will use to process the sliding kernel window:
-            var lineBuffer = new LineBuffer(MAX_LINES_FOR_WINDOW, KERNEL_PADDING_SIZE);
+            var lineBuffer = new Solution1Tests.LineBuffer(MAX_LINES_FOR_WINDOW, KERNEL_PADDING_SIZE);
 
             // Accumulate the parts that touch a symbol:
             AtomicInteger total = new AtomicInteger();
@@ -449,13 +449,15 @@ public abstract class Day03Q1Tests extends TestBase
 
                                 System.out.println("\n-----------\nkernel = \n" + kernel);
 
+                                // Count how many numbers matched:
+                                List<Integer> matches = new ArrayList<>();
+
                                 // Try to parse out the middle top:
                                 Integer topMiddleNumber = parseMiddleNumber(kernel.lineBuffer().lines.get(0), kernel.offset());
                                 if (topMiddleNumber != null)
                                 {
                                     // We found a number at the top middle.
-                                    // Accumulate the total:
-                                    total.accumulateAndGet(topMiddleNumber, Integer::sum);
+                                    matches.add(topMiddleNumber);
                                     System.out.println("Top Middle Number Found = " + topMiddleNumber);
                                 }
                                 else
@@ -468,7 +470,7 @@ public abstract class Day03Q1Tests extends TestBase
                                     if (topLeftMatcher.find())
                                     {
                                         int number = Integer.parseInt(topLeftMatcher.group(1));
-                                        total.accumulateAndGet(number, Integer::sum);
+                                        matches.add(number);
                                         System.out.println("Top Left Number Found = " + number);
                                     }
 
@@ -478,7 +480,7 @@ public abstract class Day03Q1Tests extends TestBase
                                     if (topRightMatcher.find())
                                     {
                                         int number = Integer.parseInt(topRightMatcher.group(1));
-                                        total.accumulateAndGet(number, Integer::sum);
+                                        matches.add(number);
                                         System.out.println("Top Right Number Found = " + number);
                                     }
                                 }
@@ -488,8 +490,7 @@ public abstract class Day03Q1Tests extends TestBase
                                 if (bottomMiddleNumber != null)
                                 {
                                     // We found a number at the bottom middle.
-                                    // Accumulate the total:
-                                    total.accumulateAndGet(bottomMiddleNumber, Integer::sum);
+                                    matches.add(bottomMiddleNumber);
                                     System.out.println("Bottom Middle Number Found = " + bottomMiddleNumber);
                                 }
                                 else
@@ -502,7 +503,7 @@ public abstract class Day03Q1Tests extends TestBase
                                     if (bottomLeftMatcher.find())
                                     {
                                         int number = Integer.parseInt(bottomLeftMatcher.group(1));
-                                        total.accumulateAndGet(number, Integer::sum);
+                                        matches.add(number);
                                         System.out.println("Bottom Left Number Found = " + number);
                                     }
 
@@ -512,8 +513,7 @@ public abstract class Day03Q1Tests extends TestBase
                                     if (bottomRightMatcher.find())
                                     {
                                         int number = Integer.parseInt(bottomRightMatcher.group(1));
-                                        total.accumulateAndGet(number, Integer::sum);
-
+                                        matches.add(number);
                                         System.out.println("Bottom Right Number Found = " + number);
                                     }
                                 }
@@ -524,7 +524,7 @@ public abstract class Day03Q1Tests extends TestBase
                                 if (middleLeftMatcher.find())
                                 {
                                     int number = Integer.parseInt(middleLeftMatcher.group(1));
-                                    total.accumulateAndGet(number, Integer::sum);
+                                    matches.add(number);
                                     System.out.println("Middle Left Number Found = " + number);
                                 }
 
@@ -534,10 +534,24 @@ public abstract class Day03Q1Tests extends TestBase
                                 if (middleRightMatcher.find())
                                 {
                                     int number = Integer.parseInt(middleRightMatcher.group(1));
-                                    total.accumulateAndGet(number, Integer::sum);
+                                    matches.add(number);
                                     System.out.println("Middle Right Number Found = " + number);
                                 }
 
+
+                                // Check whether we matched a gear:
+                                if (matches.size() == 2)
+                                {
+                                    // We have a gear.
+                                    System.out.println("GEAR FOUND! matches = " + matches);
+
+                                    // Work out the gear ration:
+                                    int gearRatio = matches.get(0) * matches.get(1);
+                                    System.out.println("gearRatio = " + gearRatio);
+
+                                    // Accumulate the gear ratio:
+                                    total.accumulateAndGet(gearRatio, Integer::sum);
+                                }
                             }
                         }
                 );
@@ -596,35 +610,6 @@ public abstract class Day03Q1Tests extends TestBase
             return null;
         }
 
-
-        @Test
-        public void testParsingKernelWithOneNumber()
-        {
-            LineBuffer lineBuffer = new LineBuffer(MAX_LINES_FOR_WINDOW, KERNEL_PADDING_SIZE);
-            lineBuffer.addLine("....8.&");
-            lineBuffer.addLine("396*...");
-            lineBuffer.addLine(".......");
-
-            Integer middleNumber = parseMiddleNumber("....8.&", 3);
-            assertNull(middleNumber);
-
-            var leftAlignedMatchPattern = Pattern.compile("^(\\d+)");
-
-            var topRightPattern    = leftAlignedMatchPattern;
-
-            // Create the kernel:
-            var kernel = new KernelWindow(lineBuffer, KERNEL_PADDING_SIZE, KERNEL_PADDING_SIZE);
-
-            // Get the top right sample:
-            var topRightSample = kernel.sampleRange(1, kernel.windowPadding(), -1);
-            var topRightMatcher = topRightPattern.matcher(topRightSample);
-            if (topRightMatcher.find())
-            {
-                int number = Integer.parseInt(topRightMatcher.group(1));
-                assertEquals(8, number);
-            }
-            else fail();
-        }
     }
 
 }

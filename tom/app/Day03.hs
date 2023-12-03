@@ -18,19 +18,17 @@ data Element
 
 type Position = (Int, Int)
 
-data Scheme =
-  Scheme [(Element, [Position])]
-  deriving (Show)
+type Scheme = [(Element, [Position])]
 
 inc_pos :: Int -> Int -> Parsec String Position [Position]
 inc_pos x y = do
   (cur_x, cur_y) <- getState
-  _ <- setState $ (cur_x + x, cur_y + y)
+  setState $ (cur_x + x, cur_y + y)
   pure $ [(x', y') | x' <- [cur_x .. ((cur_x + x) - 1)], y' <- [cur_y]]
 
 parse_part_number :: Parsec String Position (Element, [Position])
 parse_part_number = do
-  val :: Int <- read <$> many1 digit
+  val <- read <$> many1 digit
   pos's <- inc_pos (length $ show val) 0
   pure $ (PartNumber val, pos's)
 
@@ -42,15 +40,13 @@ parse_symbol = do
 
 parse_blank :: Parsec String Position (Element, [Position])
 parse_blank = do
-  _ <- char '.'
-  pos's <- inc_pos 1 0
+  pos's <- char '.' *> inc_pos 1 0
   pure $ (Blank, pos's)
 
 parse_newline :: Parsec String Position ()
 parse_newline = do
-  _ <- newline
-  (cur_x, cur_y) <- getState
-  _ <- setState (0, cur_y + 1)
+  (cur_x, cur_y) <- newline *> getState
+  setState (0, cur_y + 1)
   pure ()
 
 parse_scheme :: Parsec String Position Scheme
@@ -59,54 +55,49 @@ parse_scheme = do
     many1 $
     (choice [parse_part_number, parse_blank, parse_symbol]) <*
     (optional parse_newline)
-  pure $ Scheme elements
+  pure $ elements
 
-adjacent :: Position -> Position -> Bool
-adjacent (x, y) (a, b) = (abs (x - a) <= 1) && (abs (y - b) <= 1)
+adjacent :: Position -> [Position] -> Bool
+adjacent pos = any $ near pos
+  where
+    near :: Position -> Position -> Bool
+    near (x, y) (a, b) = (abs (x - a) <= 1) && (abs (y - b) <= 1)
 
 symbols :: Scheme -> [Position]
-symbols (Scheme scheme) =
+symbols =
   concatMap
-    (\(ele, pos's) ->
-       case ele of
-         Symbol _ -> pos's
-         _        -> [])
-    scheme
+    (\case
+       (Symbol _, pos's) -> pos's
+       _                 -> [])
 
 specific_symbols :: Char -> Scheme -> [Position]
-specific_symbols matching (Scheme scheme) =
+specific_symbols matching =
   concatMap
-    (\(ele, pos's) ->
-       case ele of
-         Symbol matching -> pos's
-         _               -> [])
-    scheme
+    (\case
+       (Symbol matching, pos's) -> pos's
+       _                        -> [])
 
 parts :: Scheme -> [(Int, [Position])]
-parts (Scheme scheme) =
+parts =
   concatMap
-    (\(ele, pos's) ->
-       case ele of
-         PartNumber num -> [(num, pos's)]
-         _              -> [])
-    scheme
+    (\case
+       (PartNumber num, pos's) -> [(num, pos's)]
+       _                       -> [])
 
+-- Find all the part numbers that are adjacent to symbols
 solve1 :: Scheme -> Int
-solve1 scheme@(Scheme flat_scheme)
-  -- Find all the part numbers that are adjacent to symbols
- =
+solve1 scheme =
   let part_numbers_adjacent_to_symbols :: [(Int, [Position])] =
         filter
-          (\(num, pos's) ->
-             any (\pos -> any (adjacent pos) (symbols scheme)) pos's)
+          (\(num, part_positions) ->
+             any (flip adjacent $ symbols scheme) part_positions)
           (parts scheme)
    in sum $ fst <$> part_numbers_adjacent_to_symbols
 
+-- Get all the gears (have exactly two part numbers adjacent to them) and add
+-- up their "ratios" (part1 * part2)
 solve2 :: Scheme -> Int
-solve2 scheme@(Scheme flat_scheme)
-  -- Get all the gears (have exactly two part numbers adjacent to them) and add
-  -- up their "ratios" (part1 * part2)
- =
+solve2 scheme =
   let gears :: [(Position, Int)]
       gears =
         concatMap
@@ -114,8 +105,8 @@ solve2 scheme@(Scheme flat_scheme)
              let adjacent_parts :: [Int] =
                    unique $
                    concatMap
-                     (\(num :: Int, pos :: [Position]) ->
-                        if any (\pos' -> adjacent pos' possible_gear) pos
+                     (\(num :: Int, part_positions :: [Position]) ->
+                        if adjacent possible_gear part_positions
                           then [num]
                           else [])
                      (parts scheme)
@@ -130,7 +121,7 @@ solve2 scheme@(Scheme flat_scheme)
 solve :: IO (Solution Int)
 solve = do
   input <-
-    run_parser_with_state (parse_scheme) (0, 0) <$> get_puzzle_input Mine 2023 3
+    run_parser_with_state parse_scheme (0, 0) <$> get_puzzle_input Mine 2023 3
   let solution_1 = solve1 input
       solution_2 = solve2 input
   pure $
