@@ -1,56 +1,28 @@
-module Day02 where
-
+module Day02Regex where
 import Data.List.Split (splitOn)
-import Data.List (isInfixOf)
-import Data.Foldable (find)
-import Data.Maybe (fromMaybe)
+import Day02Model
+import Utils (captureGroups)
 
--- Data model
 reds, greens, blues :: Int; reds = 12; greens = 13; blues = 14
-data GameSet = GameSet { red :: Int, green :: Int, blue :: Int }
-data Game = Game { gameNumber :: Int, sets :: [GameSet], possible :: Bool, power :: Int }
 
--- Parsers for our data model
--- Parse a single set: "red: 1, green: 4, blue: 2"
-parseGameSet :: String -> GameSet
-parseGameSet setStr =
-    GameSet { red = count' "red" setStr, green = count' "green" setStr, blue = count' "blue" setStr }
+colorCount :: String -> String -> Int
+colorCount setStr color = if null cg then 0 else read $ head cg
+  where cg = captureGroups setStr ("(\\d+) " ++ color)
 
--- Parse an entire game string
 parseGame :: String -> Game
-parseGame str =
-    let
-        [gameNumberStr, setStr] = splitOn ":" str
-        setStrs = splitOn ";" setStr
-        gameNumber = read (last (words gameNumberStr))
-        sets = map parseGameSet setStrs
-    in Game { gameNumber = gameNumber, sets = sets, possible = possible' sets, power = power' sets }
+parseGame str = Game { gameNumber = read _gameNumber, sets = _sets, possible = _possible, power = _power }
+  where
+    [_gameNumber, _setStr] = captureGroups str "Game (\\d+): (.*)"
+    _setStrs = splitOn ";" _setStr
+    _sets = [GameSet { red = colorCount s "red", green = colorCount s "green", blue = colorCount s "blue" } | s <- _setStrs ]
+    _possible = all (\set -> red set <= reds && green set <= greens && blue set <= blues) _sets
+    _power = maximum (map red _sets) * maximum (map green _sets) * maximum (map blue _sets)
 
--- Helper functions
-count' :: String -> String -> Int
-count' color colorStr =
-    let
-        colorMatch = fromMaybe "0 _" (find (\c -> color `isInfixOf` c) (splitOn "," colorStr))
-        [colorCount, _color] = words colorMatch
-    in
-        read colorCount
-
-possible' :: [GameSet] -> Bool
-possible' = all (\set -> red set <= reds && green set <= greens && blue set <= blues)
-
-power' :: [GameSet] -> Int
-power' sets = maximum (map red sets) * maximum (map green sets) * maximum (map blue sets)
-
--- Main run
 run :: IO ()
 run = do
-  contents <- lines <$> readFile "./data/day02-test"
+  contents <- lines <$> readFile "./data/day02"
   let games = [parseGame x | x <- contents]
   let possibleSum = sum (map gameNumber (filter possible games))
   let powerSum = sum (map power games)
-
-  -- Print each game if you'd like...
-  --mapM_ putStrLn [showGame x | x <- games]
-
   putStrLn $ "Answer Q1 => " ++ show possibleSum
-  putStrLn $ "Answer Q2 => " ++ show powerSum
+  putStrLn $ "Answer Q2 => " ++ show powerSum  
