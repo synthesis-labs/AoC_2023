@@ -23,9 +23,7 @@ function Get-Part($rownum, $lastrow, $lastcol) {
         $gearPositions = @()
         for ($c = $startcol; $c -le $endcol; $c++) {
             for ($r = $above; $r -le $below; $r++) {
-                if (($lines[$r][$c] | sls "[\d\.]").Matches.Length -eq 0) {
-                    $ispart = $true
-                }
+                $ispart = $ispart -or $(($lines[$r][$c] | sls "[\d\.]").Matches.Length -eq 0) 
                 if ($lines[$r][$c] -eq "*") {
                     $gearpart = $true
                     $gearPositions += "$r`:$c"
@@ -38,23 +36,19 @@ function Get-Part($rownum, $lastrow, $lastcol) {
             GearPart = $gearpart;
             GearPositions = $gearPositions
         }       
-    } | ? { $_.IsPart -eq $true }
+    } | ? IsPart
 }
 
 function Solve-Part1 {
-
     $parts = Get-Parts
     $parts | select -ExpandProperty Number | measure -Sum | select -ExpandProperty Sum
 }
 
 function Solve-Part2 {  
     $parts = Get-Parts
-    $gearParts = $parts | ? { $_.GearPart }
+    $gearParts = $parts | ? GearPart
     $gearlinks = $gearParts | select -ExpandProperty GearPositions | group | ? Count -eq 2 | select -ExpandProperty Name
-    $gearlinks | % {
-        $link = $_
-        ($gearParts | ? { $_.GearPositions -eq $link } | % { $_.Number }) -join "*" | iex
-    } | measure -Sum | select -ExpandProperty Sum
+    $gearlinks | % {($gearParts | ? GearPositions -eq $_ | % { $_.Number }) -join "*" | iex } | measure -Sum | select -ExpandProperty Sum
 }
 
 Solve-Part1
