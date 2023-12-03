@@ -1,6 +1,7 @@
 package AdventCode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,4 +110,37 @@ public class Advent_Day3 {
         return powerOfSetsSum;
     }
 
+    public HashMap<String, String> findNumbersAdjacentToSymbolHorizontal(String schematicLine) {
+        String _num = "num";
+        String numbers = "";
+
+        HashMap<String, String> startIndexToNumberMap = new HashMap<>();
+
+        Pattern patternSymbolBefore = Pattern.compile("(\\D*)((?<![\\.a-zA-Z])(?<num>\\b\\d+))");
+        Pattern patternSymbolAfter = Pattern.compile("[\\.a-zA-Z]*(?<num>\\d+)\\b(?![\\.a-zA-Z])");
+
+        Matcher matcherSymbolBefore = patternSymbolBefore.matcher(schematicLine);
+        Matcher matcherSymbolAfter = patternSymbolAfter.matcher(schematicLine);
+
+        StringBuilder sb = new StringBuilder(numbers);
+
+        int matchCount = 0;
+
+        while (matcherSymbolBefore.find()) {
+            matchCount++;
+            String number = matcherSymbolBefore.group(_num);
+            String start = String.valueOf(matcherSymbolBefore.start(_num));
+
+            startIndexToNumberMap.put(start, number);
+        }
+
+        while (matcherSymbolAfter.find()) {
+            String number = matcherSymbolAfter.group(_num);
+            String start = String.valueOf(matcherSymbolAfter.start(_num));
+
+            startIndexToNumberMap.put(start, number);
+        }
+
+        return startIndexToNumberMap;
+    }
 }
