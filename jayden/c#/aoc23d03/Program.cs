@@ -24,12 +24,6 @@ string GetPart1()
     var lengthOfLine = input[0].Length;
     var totalCount = 0;
 
-    int testing;
-    var check = !char.IsLetterOrDigit('*');
-    var check1 = !int.TryParse('*'.ToString(), out testing);
-    var check2 = input[1][15];
-    var check3 = input[1][12];
-
     var charList = new List<List<char>>();
 
     //convert into chars
@@ -41,7 +35,6 @@ string GetPart1()
             charList[line].Add(input[line][character]);
         }
     }
-    Console.WriteLine("done converting chars");
 
     for (int line = 0; line < lengthOfInput; line++)
     {
@@ -82,17 +75,6 @@ string GetPart1()
                     {
                         upperChars.Add(charList[line - 1][character + numberLength]);
                     }
-                    //for (var i = 0; i <= numberLength; i++)
-                    //{
-                    //    if (character == 0)
-                    //    {
-                    //        upperChars.Add(charList[line - 1][character]);
-                    //    }
-                    //    else
-                    //    {
-                    //        upperChars.Add(charList[line - 1][character - 1 + i]);
-                    //    }
-                    //}
                     if (upperChars.Any(x => x != '.'))
                     {
                         foreach (var charcheck in upperChars)
@@ -152,19 +134,6 @@ string GetPart1()
                         lowerChars.Add(charList[line + 1][character + numberLength]);
                     }
 
-                    //for (var i = 0; i <= numberLength; i++)
-                    //{
-                    //    //add 1 to num length to get horizontal char, add 1 to line for the above line and minus 1 from character to start at the left most horizontal char
-                    //    if (character == 0)
-                    //    {
-                    //        lowerChars.Add(charList[line + 1][character  + i]);
-                    //    }
-                    //    else
-                    //    {
-                    //        lowerChars.Add(charList[line + 1][character - 1 + i]);
-                    //    }
-                    //}
-
                     if (lowerChars.Any(x => x != '.') && !isIncreased)
                     {
                         foreach (var charcheck in lowerChars)
@@ -182,14 +151,6 @@ string GetPart1()
 
                 //increase character by length of number found so that we dont read more of its numbers
                 character += numberLength;
-                if (!isIncreased)
-                {
-                    Console.WriteLine("Didnt find a special character for: " + numberFound.ToString());
-                }
-                else
-                {
-                    Console.WriteLine("Found a special character for: " + numberFound.ToString());
-                }
             }
 
             //if not already increased, increase by 1
@@ -220,6 +181,23 @@ string GetNumberFound(int y, int x, List<List<char>> input, string currentFoundD
     return currentFoundDigits;
 }
 
+string GetNumberFoundLeft(int y, int x, List<List<char>> input, string currentFoundDigits)
+{
+    currentFoundDigits = input[y][x].ToString() + currentFoundDigits;
+    if (x == 0)
+    {
+        //if they are here, we know it was a digit because it was checked in the prev iteration
+        return currentFoundDigits;
+    }
+    //check if there are more numbers following
+    if (char.IsDigit(input[y][x - 1]))
+    {
+        currentFoundDigits = GetNumberFoundLeft(y, x - 1, input, currentFoundDigits);
+    }
+
+    return currentFoundDigits;
+}
+
 int GetNumberLength(int y, int x, List<List<char>> input, int currentLength)
 {
     int lengthOfNumber = currentLength;
@@ -240,8 +218,209 @@ int GetNumberLength(int y, int x, List<List<char>> input, int currentLength)
 
 string GetPart2()
 {
-    var intput = GetInput();
+    var input = GetInput();
+    var lengthOfInput = input.Count;
+    var lengthOfLine = input[0].Length;
+    var sumOfTotalGearRatios = 0;
 
-    return "";
+    var charList = new List<List<char>>();
+
+    //.....
+    //..*..
+    //.....
+
+    //convert into chars
+    for (int readline = 0; readline <= lengthOfInput - 1; readline++)
+    {
+        charList.Add(new List<char>());
+        for (int readcharacter = 0; readcharacter <= lengthOfLine - 1; readcharacter++)
+        {
+            charList[readline].Add(input[readline][readcharacter]);
+        }
+    }
+
+    for (int line = 0; line < lengthOfInput; line++)
+    {
+        for (int character = 0; character < lengthOfLine; character++)
+        {
+            var currentChar = input[line][character];
+
+            if(currentChar == '*')
+            {
+                var listOfAdjNums = new List<int>();
+
+
+                //check middle left
+                if (character != 0)
+                {
+                    int tmm;
+                    if (int.TryParse(charList[line][character - 1].ToString(), out tmm))
+                    {
+                        var adjNum = GetNumberFoundLeft(line, character-1, charList, "");//this works for numbers to the left
+                        listOfAdjNums.Add(int.Parse(adjNum));
+                    }
+                }
+                //check middle right
+                if (character + 1 < lengthOfLine)
+                {
+                    int tmm;
+                    if (int.TryParse(charList[line][character+1].ToString(), out tmm))
+                    {
+                        var adjNum = GetNumberFound(line, character+1, charList, "");//this works for numbers to the right
+                        listOfAdjNums.Add(int.Parse(adjNum));
+                    }
+                }
+                //UPPER:
+                if (line != 0)
+                {
+                    //if top middle = .
+                    if (charList[line - 1][character] == '.')
+                    {
+                        //dont check left
+                        if(character != 0)
+                        {
+                            var topLeftChar = charList[line - 1][character - 1];
+                            int mmm;
+                            if(int.TryParse(topLeftChar.ToString(), out mmm))
+                            {
+                                //top left is num
+                                var num = GetNumberFoundLeft(line-1, character-1, charList, "");
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                        //dont check right
+                        if(character != lengthOfLine - 1)
+                        {
+                            var topRightChar = charList[line - 1][character +1];
+                            int mmm;
+                            if (int.TryParse(topRightChar.ToString(), out mmm))
+                            {
+                                //top right is num
+                                var num = GetNumberFound(line-1, character+1, charList, "");
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                    }
+                    //not .
+                    else
+                    {
+                        //check if top left is num
+                        int mmm;
+                        if (character != 0 && int.TryParse(charList[line - 1][character - 1].ToString(), out mmm)){
+                            //check if there is a num further left
+                            string num = "";
+                            if(character - 2 >= 0 && int.TryParse(charList[line - 1][character - 2].ToString(), out mmm))
+                            {
+                                num = GetNumberFound(line - 1, character - 2, charList, "");
+                            }
+                            else
+                            {
+                                num = GetNumberFound(line-1, character - 1, charList, "");
+                            }
+                            if(num != "")
+                            {
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                        //else check if top middle is num
+                        else if (int.TryParse(charList[line - 1][character].ToString(), out mmm))
+                        {
+                            var num = GetNumberFound(line-1, character, charList, "");
+                            listOfAdjNums.Add(int.Parse(num));
+                        }
+                        //else check if top right is num
+                        else if (character < lengthOfLine - 1 && int.TryParse(charList[line - 1][character + 1].ToString(), out mmm) && character != lengthOfLine-1)
+                        {
+                            var num = GetNumberFound(line - 1, character + 1, charList, "");
+                            listOfAdjNums.Add(int.Parse(num));
+                        }
+                    }
+                }
+
+                //LOWER:
+                if (line < lengthOfInput-1)
+                {
+                    //if bottom middel = .
+                    if (charList[line + 1][character] == '.')
+                    {
+                        //dont check left
+                        if (character != 0)
+                        {
+                            var bottomLeftChar = charList[line + 1][character - 1];
+                            int mmm;
+                            if (int.TryParse(bottomLeftChar.ToString(), out mmm))
+                            {
+                                //bottom left is num
+                                var num = GetNumberFoundLeft(line+1, character -1, charList, "");
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                        //dont check right
+                        if (character != lengthOfLine - 1)
+                        {
+                            var bottomLeftChar = charList[line + 1][character + 1];
+                            int mmm;
+                            if (int.TryParse(bottomLeftChar.ToString(), out mmm))
+                            {
+                                //bottom right is num
+                                var num = GetNumberFound(line+1, character + 1, charList, "");
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                    }
+                    //not .
+                    else
+                    {
+                        //check if bottom left is num
+                        int mmm;
+                        if (character != 0 && int.TryParse(charList[line + 1][character - 1].ToString(), out mmm) && character != 0)
+                        {
+                            //check if there is a num further left
+                            string num = "";
+                            if (character - 2 >= 0 && int.TryParse(charList[line + 1][character - 2].ToString(), out mmm))
+                            {
+                                num = GetNumberFound(line + 1, character - 2, charList, "");
+                            }
+                            else
+                            {
+                                num = GetNumberFound(line + 1, character - 1, charList, "");
+                            }
+                            if (num != "")
+                            {
+                                listOfAdjNums.Add(int.Parse(num));
+                            }
+                        }
+                        //else check if bottom middle is num
+                        else if (int.TryParse(charList[line + 1][character].ToString(), out mmm))
+                        {
+                            if(charList[line - 1][character] == '5')
+                            {
+                                var num2 = GetNumberFound(line + 1, character, charList, "");
+                            }
+                            var num = GetNumberFound(line + 1, character, charList, "");
+                            listOfAdjNums.Add(int.Parse(num));
+                        }
+                        //else check if bottom right is num
+                        else if (character < lengthOfLine-1 && int.TryParse(charList[line + 1][character + 1].ToString(), out mmm) && character != lengthOfLine - 1)
+                        {
+                            var num = GetNumberFound(line + 1, character + 1, charList, "");
+                            listOfAdjNums.Add(int.Parse(num));
+                        }
+                    }
+                }
+                //check if adj is EXACTLY 2
+                if (listOfAdjNums.Count == 2)
+                {
+                    Console.WriteLine($"found the numbers {listOfAdjNums[0]} , {listOfAdjNums[1]} to be gear ratios on line: {line}");
+                    //get the gear ratio that are adj to gear.
+                    sumOfTotalGearRatios += listOfAdjNums[0] * listOfAdjNums[1];
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+
+    return sumOfTotalGearRatios.ToString();
 }
-Console.WriteLine("Part 1: "+GetPart1());
+Console.WriteLine("Part 1: " + GetPart1());
+Console.WriteLine("Part 2: " + GetPart2());
