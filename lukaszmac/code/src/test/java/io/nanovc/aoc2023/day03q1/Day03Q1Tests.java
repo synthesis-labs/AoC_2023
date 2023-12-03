@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * --- Day 3: Gear Ratios ---
  * You and the Elf eventually reach a gondola lift station; he says the gondola lift will take you up to the water source, but this is as far as he can bring you. You go inside.
@@ -110,7 +112,7 @@ public abstract class Day03Q1Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "2416";
+        return "538046";
     }
 
     /**
@@ -152,6 +154,11 @@ public abstract class Day03Q1Tests extends TestBase
          * This is the number of lines that we need to process for a sliding kernel window.
          */
         public final static int MAX_LINES_FOR_WINDOW = 3;
+
+        /**
+         * The pattern for the symbols to match a kernel around.
+         */
+        public static final String SYMBOL_PATTERN = "[!@#$%^&*()_+=~\\-/\\\\]";
 
         /**
          * This is a buffer that takes in the lines, one line at a time and then waits until it can process a run of the kernel sliding across the lines.
@@ -242,14 +249,14 @@ public abstract class Day03Q1Tests extends TestBase
 
                     // Slide across:
                     for (
-                            int offset = 0,
+                            int xOffset = this.windowPadding,
                             max = this.lines.get(0).length() - this.windowPadding; // Size of the line in the buffer less the right side of the padding.
-                            offset < max;
-                            offset++
+                            xOffset < max;
+                            xOffset++
                     )
                     {
                         // Create a kernel window:
-                        var kernel = new KernelWindow(this, offset, this.windowPadding, this.windowPadding, this.maxLines / 2 + 1);
+                        var kernel = new KernelWindow(this, xOffset, this.windowPadding);
 
                         // Allow the callback to handle the sliding kernel window:
                         kernelWindowConsumer.accept(kernel);
@@ -260,15 +267,13 @@ public abstract class Day03Q1Tests extends TestBase
 
         /**
          * A sliding kernel window.
+         * The coordinates of the sliding kernel window are from: -windowPadding to +windowPadding
          *
          * @param lineBuffer    The line buffer that we are viewing.
          * @param offset        The offset (left edge) from the start of the line buffer.
          * @param windowPadding The padding size for the sliding kernel window. The actual width of the window is windowPadding + 1 + windowPadding, because the padding is the size around the sampling kernel size.
-         * @param sampleOffset  The relative offset from the left edge of the kernel window where we sample the middle of the kernel.
-         * @param sampleLine    The relative offset from the top of the kernel window where we sample the middle of the kernel.
          */
-        public record KernelWindow(LineBuffer lineBuffer, int offset, int windowPadding, int sampleOffset,
-                                   int sampleLine)
+        public record KernelWindow(LineBuffer lineBuffer, int offset, int windowPadding)
         {
             /**
              * The width of this kernel window.
@@ -283,28 +288,31 @@ public abstract class Day03Q1Tests extends TestBase
             /**
              * Samples the kernel window at the given coordinates.
              *
-             * @param xOffsetFromLeft The offset from the left of the kernel window.
-             * @param yOffsetFromTop  The offset from the top of the kernel window.
+             * @param xOffset The offset from the middle of the kernel window. -ve means to sample to the left of the middle of the kernel. +ve means to sample to the right. 0 means to sample at the middle of the kernel.
+             * @param yOffset  The offset from the middle of the kernel window. -ve means to sample above the middle of the kernel. +ve means to sample down. 0 means to sample at the middle of the kernel.
              * @return The character at the given coordinate. It returns a blank string if the coordinate is outside the window.
              */
-            public String sample(int xOffsetFromLeft, int yOffsetFromTop)
+            public String sample(int xOffset, int yOffset)
             {
-                // Check the range:
-                if (yOffsetFromTop < 0 ||
-                    yOffsetFromTop >= this.lineBuffer().maxLines
+                // Get the Y offset:
+                int yIndex = (this.lineBuffer().lines.size() / 2) + yOffset;
+
+                // Check the Y range:
+                if (yIndex < 0 ||
+                        yIndex >= this.lineBuffer().maxLines
                 ) return "";
 
                 // Get the line that we want:
-                String line = this.lineBuffer().lines.get(yOffsetFromTop);
+                String line = this.lineBuffer().lines.get(yIndex);
 
                 // Get the index that we want:
-                int index = this.offset + xOffsetFromLeft;
+                int xIndex = this.offset + xOffset;
 
                 // Make sure the index is in range:
-                if (index < 0 || index >= line.length()) return "";
+                if (xIndex < 0 || xIndex >= line.length()) return "";
 
                 // Get the character:
-                return line.substring(index, index + 1);
+                return line.substring(xIndex, xIndex + 1);
             }
 
             /**
@@ -314,7 +322,7 @@ public abstract class Day03Q1Tests extends TestBase
              */
             public String sampleMiddleOfKernel()
             {
-                return sample(this.windowPadding(), this.lineBuffer().maxLines / 2);
+                return sample(0, 0);
             }
 
             /**
@@ -339,9 +347,9 @@ public abstract class Day03Q1Tests extends TestBase
             {
                 StringBuilder stringBuilder = new StringBuilder();
 
-                for (int yOffset = 0; yOffset < lineBuffer().maxLines; yOffset++)
+                for (int yOffset = -lineBuffer().maxLines / 2, maxY = lineBuffer().maxLines / 2; yOffset <= maxY; yOffset++)
                 {
-                    for (int xOffset = 0, max = width(); xOffset < max; xOffset++)
+                    for (int xOffset = -this.windowPadding(), maxX = this.windowPadding(); xOffset <= maxX; xOffset++)
                     {
                         stringBuilder.append(sample(xOffset, yOffset));
                     }
@@ -365,18 +373,15 @@ public abstract class Day03Q1Tests extends TestBase
             AtomicInteger total = new AtomicInteger();
 
             // Define the patterns that we want:
-            var rightAlignedMatchPattern = Pattern.compile("\\d+$");
-            var leftAlignedMatchPattern = Pattern.compile("^\\d+");
-            var midConnectedPattern = Pattern.compile("^\\D+\\d+\\D+$");
+            var rightAlignedMatchPattern = Pattern.compile("(\\d+)$");
+            var leftAlignedMatchPattern = Pattern.compile("^(\\d+)");
 
-            var topLeftPattern     = Pattern.compile("(\\d+)\\D?$");
-            var midLeftPattern     = rightAlignedMatchPattern;
+            var topLeftPattern     = rightAlignedMatchPattern;
+            var middleLeftPattern  = rightAlignedMatchPattern;
             var bottomLeftPattern  = rightAlignedMatchPattern;
-            var topRightPattern    = Pattern.compile("^\\D?(\\d+)");
-            var midRightPattern    = leftAlignedMatchPattern;
+            var topRightPattern    = leftAlignedMatchPattern;
+            var middleRightPattern = leftAlignedMatchPattern;
             var bottomRightPattern = leftAlignedMatchPattern;
-            var topMidPattern      = midConnectedPattern;
-            var bottomMidPattern   = midConnectedPattern;
 
 
             // Go through each line:
@@ -396,7 +401,7 @@ public abstract class Day03Q1Tests extends TestBase
                             String middleOfKernel = kernel.sampleMiddleOfKernel();
 
                             // Check if the kernel sees any of the special characters we want:
-                            if (middleOfKernel.matches("[!@#$%^&*()_+]"))
+                            if (middleOfKernel.matches(SYMBOL_PATTERN))
                             {
                                 // This is an interesting kernel.
 
@@ -442,34 +447,183 @@ public abstract class Day03Q1Tests extends TestBase
                                 // ...!...
                                 // .XXXXX.
 
-                                System.out.println("kernel = \n" + kernel);
+                                System.out.println("\n-----------\nkernel = \n" + kernel);
 
-                                // Get the top left sample:
-                                var topLeftSample = kernel.sampleRange(0, KERNEL_PADDING_SIZE, 0);
-                                var topLeftMatcher = topLeftPattern.matcher(topLeftSample);
-                                if (topLeftMatcher.matches())
+                                // Try to parse out the middle top:
+                                Integer topMiddleNumber = parseMiddleNumber(kernel.lineBuffer().lines.get(0), kernel.offset());
+                                if (topMiddleNumber != null)
                                 {
-                                    int number = Integer.parseInt(topLeftMatcher.group(1));
-                                    total.accumulateAndGet(number, Integer::sum);
+                                    // We found a number at the top middle.
+                                    // Accumulate the total:
+                                    total.accumulateAndGet(topMiddleNumber, Integer::sum);
+                                    System.out.println("Top Middle Number Found = " + topMiddleNumber);
+                                }
+                                else
+                                {
+                                    // We don't have a number touching the middle at the top.
+
+                                    // Get the top left sample:
+                                    var topLeftSample = kernel.sampleRange(-kernel.windowPadding(), -1, -1);
+                                    var topLeftMatcher = topLeftPattern.matcher(topLeftSample);
+                                    if (topLeftMatcher.find())
+                                    {
+                                        int number = Integer.parseInt(topLeftMatcher.group(1));
+                                        total.accumulateAndGet(number, Integer::sum);
+                                        System.out.println("Top Left Number Found = " + number);
+                                    }
+
+                                    // Get the top right sample:
+                                    var topRightSample = kernel.sampleRange(1, kernel.windowPadding(), -1);
+                                    var topRightMatcher = topRightPattern.matcher(topRightSample);
+                                    if (topRightMatcher.find())
+                                    {
+                                        int number = Integer.parseInt(topRightMatcher.group(1));
+                                        total.accumulateAndGet(number, Integer::sum);
+                                        System.out.println("Top Right Number Found = " + number);
+                                    }
                                 }
 
-//                                // Get the top right sample:
-//                                var topRightSample = kernel.sampleRange(KERNEL_PADDING_SIZE - 1, kernel.width(), 0);
-//                                var topRightMatcher = topRightPattern.matcher(topRightSample);
-//                                if (topRightMatcher.matches())
-//                                {
-//                                    int number = Integer.parseInt(topRightMatcher.group(1));
-//                                    total.accumulateAndGet(number, Integer::sum);
-//                                }
+                                // Try to parse out the middle bottom:
+                                Integer bottomMiddleNumber = parseMiddleNumber(kernel.lineBuffer().lines.getLast(), kernel.offset());
+                                if (bottomMiddleNumber != null)
+                                {
+                                    // We found a number at the bottom middle.
+                                    // Accumulate the total:
+                                    total.accumulateAndGet(bottomMiddleNumber, Integer::sum);
+                                    System.out.println("Bottom Middle Number Found = " + bottomMiddleNumber);
+                                }
+                                else
+                                {
+                                    // We don't have a number touching the middle at the bottom.
 
+                                    // Get the bottom left sample:
+                                    var bottomLeftSample = kernel.sampleRange(-kernel.windowPadding(), -1, 1);
+                                    var bottomLeftMatcher = bottomLeftPattern.matcher(bottomLeftSample);
+                                    if (bottomLeftMatcher.find())
+                                    {
+                                        int number = Integer.parseInt(bottomLeftMatcher.group(1));
+                                        total.accumulateAndGet(number, Integer::sum);
+                                        System.out.println("Bottom Left Number Found = " + number);
+                                    }
+
+                                    // Get the bottom right sample:
+                                    var bottomRightSample = kernel.sampleRange(1, kernel.windowPadding(), 1);
+                                    var bottomRightMatcher = bottomRightPattern.matcher(bottomRightSample);
+                                    if (bottomRightMatcher.find())
+                                    {
+                                        int number = Integer.parseInt(bottomRightMatcher.group(1));
+                                        total.accumulateAndGet(number, Integer::sum);
+
+                                        System.out.println("Bottom Right Number Found = " + number);
+                                    }
+                                }
+
+                                // Try to parse out the middle left:
+                                var middleLeftSample = kernel.sampleRange(-kernel.windowPadding(), -1, 0);
+                                var middleLeftMatcher = middleLeftPattern.matcher(middleLeftSample);
+                                if (middleLeftMatcher.find())
+                                {
+                                    int number = Integer.parseInt(middleLeftMatcher.group(1));
+                                    total.accumulateAndGet(number, Integer::sum);
+                                    System.out.println("Middle Left Number Found = " + number);
+                                }
+
+                                // Try to parse out the middle right:
+                                var middleRightSample = kernel.sampleRange(1, kernel.windowPadding(), 0);
+                                var middleRightMatcher = middleRightPattern.matcher(middleRightSample);
+                                if (middleRightMatcher.find())
+                                {
+                                    int number = Integer.parseInt(middleRightMatcher.group(1));
+                                    total.accumulateAndGet(number, Integer::sum);
+                                    System.out.println("Middle Right Number Found = " + number);
+                                }
 
                             }
                         }
                 );
             }
 
+            return Integer.toString(total.get());
+        }
 
+        public Integer parseMiddleNumber(String line, int position)
+        {
+            // Create a range of characters for the digits:
+            int start = position;
+            int end = position + 1;
+
+            // Check whether we have a number at the given position:
+            String character = line.substring(start, end);
+            if (character.matches("\\d"))
+            {
+                // This is a digit.
+
+                // Widen towards the left:
+                do
+                {
+                    // Move to the left:
+                    start--;
+
+                    // Sample:
+                    character = line.substring(start, start+1);
+                }
+                while (start >= 0 && character.matches("\\d"));
+                // Now we have stepped past the start of the number.
+                // Step forward to get the beginning.
+                start++;
+
+
+                // Widen towards the right:
+                do
+                {
+                    // Move to the right:
+                    end++;
+
+                    // Sample:
+                    character = line.substring(end - 1, end);
+                }
+                while (end < line.length() && character.matches("\\d"));
+                // Now we have stepped past the end of the number.
+                // Step backward to get the end.
+                end--;
+
+                // Parse the number:
+                var numberText = line.substring(start, end);
+                int number = Integer.parseInt(numberText);
+                return number;
+            }
+            // If we get here then we didn't find the number.
             return null;
+        }
+
+
+        @Test
+        public void testParsingKernelWithOneNumber()
+        {
+            LineBuffer lineBuffer = new LineBuffer(MAX_LINES_FOR_WINDOW, KERNEL_PADDING_SIZE);
+            lineBuffer.addLine("....8.&");
+            lineBuffer.addLine("396*...");
+            lineBuffer.addLine(".......");
+
+            Integer middleNumber = parseMiddleNumber("....8.&", 3);
+            assertNull(middleNumber);
+
+            var leftAlignedMatchPattern = Pattern.compile("^(\\d+)");
+
+            var topRightPattern    = leftAlignedMatchPattern;
+
+            // Create the kernel:
+            var kernel = new KernelWindow(lineBuffer, KERNEL_PADDING_SIZE, KERNEL_PADDING_SIZE);
+
+            // Get the top right sample:
+            var topRightSample = kernel.sampleRange(1, kernel.windowPadding(), -1);
+            var topRightMatcher = topRightPattern.matcher(topRightSample);
+            if (topRightMatcher.find())
+            {
+                int number = Integer.parseInt(topRightMatcher.group(1));
+                assertEquals(8, number);
+            }
+            else fail();
         }
     }
 
