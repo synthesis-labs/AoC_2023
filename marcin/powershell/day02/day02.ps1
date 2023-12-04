@@ -24,5 +24,5 @@ function Solve {
     }
 }
 
-echo "Part 1: $(Solve | ? { $_.Valid -eq $true } | select -ExpandProperty Game | measure -Sum | select -ExpandProperty Sum )"
+echo "Part 1: $(Solve | ? Valid | select -ExpandProperty Game | measure -Sum | select -ExpandProperty Sum )"
 echo "Part 2: $(Solve | select -ExpandProperty Power | measure -Sum | select -ExpandProperty Sum)"
