@@ -22,5 +22,5 @@ $cubes = cat $InputFile | % {
     }
 }
 
-echo "Part 1: $($cubes | ? Valid | select -ExpandProperty Game | measure -Sum | select -ExpandProperty Sum )"
-echo "Part 2: $($cubes | select -ExpandProperty Power | measure -Sum | select -ExpandProperty Sum)"
+echo "Part 1: $( (($cubes | ? Valid).Game | measure -Sum).Sum )"
+echo "Part 2: $( (($cubes).Power | measure -Sum).Sum )"

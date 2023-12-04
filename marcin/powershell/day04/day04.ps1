@@ -15,5 +15,5 @@ for ($i = 0; $i -lt $cards.Length - 1; $i++) {
     }
 }
 
-echo "Part 1: $($cards | measure -Property Points -Sum | select -ExpandProperty Sum )"
-echo "Part 2: $($cards | measure -Property Instances -Sum | select -ExpandProperty Sum)"
+echo "Part 1: $( ($cards | measure -Property Points -Sum).Sum )"
+echo "Part 2: $( ($cards | measure -Property Instances -Sum).Sum )"

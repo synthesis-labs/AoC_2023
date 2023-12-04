@@ -17,7 +17,7 @@ $parts = $lines | % {
 }
 
 $gearParts = $parts | ? GearPart
-$gearlinks = $gearParts | select -ExpandProperty Links | group | ? Count -eq 2 | select -ExpandProperty Name
+$gearlinks = ($gearParts.Links | group | ? Count -eq 2).Name
 
-echo "Part 1: $($parts | select -ExpandProperty Number | measure -Sum | select -ExpandProperty Sum)"
-echo "Part 2: $($gearlinks | % {($gearParts | ? Links -eq $_ | % { $_.Number }) -join "*" | iex } | measure -Sum | select -ExpandProperty Sum)"
+echo "Part 1: $( ($parts.Number | measure -Sum).Sum )"
+echo "Part 2: $( ($gearlinks | % { ($gearParts | ? Links -eq $_).Number -join "*" | iex } | measure -Sum).Sum)"
