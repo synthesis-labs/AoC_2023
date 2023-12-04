@@ -8,10 +8,8 @@ $cards = cat $InputFile | sls ": (.+) \| (.+)" | % {
 }
 
 for ($i = 0; $i -lt $cards.Length - 1; $i++) {
-    for ($d = 0; $d -lt $cards[$i].Instances; $d++) {
-        for ($c = $i+1; $c -le [Math]::Min($cards.Length - 1, $i + $cards[$i].Count); $c++) {
-            $cards[$c].Instances++
-        }
+    for ($c = $i+1; $c -le [Math]::Min($cards.Length - 1, $i + $cards[$i].Count); $c++) {
+        $cards[$c].Instances += $cards[$i].Instances
     }
 }
 
