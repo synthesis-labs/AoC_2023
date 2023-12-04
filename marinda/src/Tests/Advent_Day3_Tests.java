@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -49,7 +48,7 @@ public class Advent_Day3_Tests {
     @Test
     public void Part1_Test_SampleData() {
 
-        Advent_Day3 Advent_Day3 = new Advent_Day3();
+        Advent_Day3 advent_Day3 = new Advent_Day3();
 
         ArrayList<String> sampleData = new ArrayList<>();
         sampleData.add("467..114..");
@@ -63,14 +62,10 @@ public class Advent_Day3_Tests {
         sampleData.add("...$.*....");
         sampleData.add(".664.598..");
 
-        HashMap<String, String> numbersAdjacentToSymbolHorizontal = Advent_Day3.findNumbersAdjacentToSymbolHorizontal("*617*...*456...");
 
-        assertEquals("{1=617, 9=456}", numbersAdjacentToSymbolHorizontal.toString());
+        int partNumbersSum = advent_Day3.Part1(sampleData);
 
-
-//        int possibleGameIDsSum = Advent_Day3.Part1(sampleData);
-//
-//        assertEquals(8, possibleGameIDsSum);
+        assertEquals(4361, partNumbersSum);
     }
 
     @Test
