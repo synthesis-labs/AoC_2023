@@ -1,5 +1,7 @@
-module Day02ShowFns where
-import Day02 (GameSet (red, green, blue), Game (gameNumber, possible, sets))
+module Day02Model where
+
+data GameSet = GameSet { red :: Int, green :: Int, blue :: Int }
+data Game = Game { gameNumber :: Int, sets :: [GameSet], possible :: Bool, power :: Int }
 
 showGameSet :: GameSet -> String
 showGameSet gameSet =

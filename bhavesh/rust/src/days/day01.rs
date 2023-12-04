@@ -31,7 +31,14 @@ fn part1(input_data: &String) -> i32 {
 }
 
 fn part2(input_data: &String) -> i32 {
-    String::len(input_data).try_into().unwrap()
+    return input_data
+        .split("\n")
+        .filter(|x| !x.is_empty())
+        .map(|x| x.to_string())
+        .map(replace_words_with_digits)
+        .map(match_digits)
+        .map(calc_calibration_number)
+        .sum();
 }
 
 fn sample_solution_part1() -> i32 {
@@ -41,6 +48,7 @@ fn sample_solution_part1() -> i32 {
 
 fn sample_solution_part2() -> i32 {
     let input_data = String::from("two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen\n");
+
     part2(&input_data)
 }
 
@@ -54,6 +62,19 @@ fn match_digits(string: String) -> Vec<i32> {
         .map(|c| c.to_string())
         .map(|c| c.parse::<i32>().unwrap())
         .collect()
+}
+
+fn replace_words_with_digits(string: String) -> String {
+    string
+        .replace("one", "o1e")
+        .replace("two", "t2o")
+        .replace("three", "t3e")
+        .replace("four", "f4r")
+        .replace("five", "f5e")
+        .replace("six", "s6x")
+        .replace("seven", "s7n")
+        .replace("eight", "e8t")
+        .replace("nine", "n9e")
 }
 
 fn calc_calibration_number(calibration_numbers: Vec<i32>) -> i32 {
