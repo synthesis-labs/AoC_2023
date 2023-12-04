@@ -24,14 +24,3 @@ function Solve-Part2 {
 
 echo "Part 1: $(Get-Cards | measure -Property Points -Sum | select -ExpandProperty Sum )"
 echo "Part 2: $(Solve-Part2)"
-
-
-
-
-
-
-
-         
-        # for ($d = 0; $d -lt $cards[$i].Instances; $d++) {
-        #     echo "$i`:$d"
-        # }
