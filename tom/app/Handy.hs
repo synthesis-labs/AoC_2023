@@ -142,3 +142,15 @@ get_puzzle_input which_input year day = do
   openFile (local_path <> local_file) ReadMode >>= hGetContents
 
 
+
+-- A filter
+(-|) :: [a] -> (a -> Bool) -> [a]
+(-|) = flip filter
+
+-- map
+(-+) :: [a] -> (a -> b) -> [b]
+(-+) = flip (<$>)
+
+-- flatmap
+(-*) :: [a] -> (a -> [b]) -> [b]
+(-*) = flip concatMap
