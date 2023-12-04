@@ -1,21 +1,4 @@
-#region input
-test_input1="""
-Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
-Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
-Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
-Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
-Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
-Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
-"""
-
-test_input2="""
-Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
-Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
-Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
-Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
-Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
-Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
-"""
+import re
 
 actual_input="""
 Card   1: 82 15 37 75 85 51 99 18 17  2 |  8 17 54 14 18 99  4 85 51 49 91 15 82 24 75 25 69 61 52 58 37 87  2 22 28
@@ -239,9 +222,6 @@ Card 218: 91 50 80 42 23 76 63 81 29 39 | 57 26  2  3 21 43 52 34 70 91 30  8 12
 Card 219: 63 29 45 94 49 57 24 40 71 99 | 86 37 23 13 67 19 36 69 22 48 20 10 44 59  1 16 52 43  4  2 15 85 74 33 34
 Card 220:  7 42 25 84 54 11 88  6 55 73 | 86  5 82 70 49 80 21 36 16 34 17 77 44 74 61  1  4 39 45 47  3 81 57 60 24
 """
-#endregion
-
-import re
 
 class Card:
     number = 0
@@ -313,18 +293,5 @@ def solve2(input):
 
     return len(cumulative_card_list)
 
-
-
-
-t1 = solve1(test_input1)
-print("Test Solution 1", t1)
-assert t1 == 13, "Test 1 failed: %d" % t1
-
-a1 = solve1(actual_input)
-print("Actual, Solution 1", a1)
-
-t2 = solve2(test_input1)
-assert t2 == 30, "Test 2 failed: %d" % t2
-
 a2 = solve2(actual_input)
-print("Actual, Solution 1", a2)
+print(a2)

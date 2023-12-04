@@ -1,23 +1,22 @@
-#region input
-test_input1="""
+const test_input1=`
 Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
-"""
+`
 
-test_input2="""
+const test_input2=`
 Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
-"""
+`
 
-actual_input="""
+const actual_input=`
 Card   1: 82 15 37 75 85 51 99 18 17  2 |  8 17 54 14 18 99  4 85 51 49 91 15 82 24 75 25 69 61 52 58 37 87  2 22 28
 Card   2: 67 26 84 63 48 73 36 94 89 65 | 36 94 96 65 89 87 12 26 81 82 77 99 40 63  6 73 55 48 10 69 59 78 24 67 84
 Card   3: 57 44 28 69 45 17 48 62 93 89 | 44 92 33 24 40 43 89 94 62 19 78 87 70 28 57 14 74 32 80 18  8 85 79  9 71
@@ -238,93 +237,58 @@ Card 217: 33 92 13  9 53 41 74 86  8 50 | 78 76 73 17 99 39 48 98 89 62  7 11 10
 Card 218: 91 50 80 42 23 76 63 81 29 39 | 57 26  2  3 21 43 52 34 70 91 30  8 12 24 99 94 97 83  9 74 19 40 49 78 62
 Card 219: 63 29 45 94 49 57 24 40 71 99 | 86 37 23 13 67 19 36 69 22 48 20 10 44 59  1 16 52 43  4  2 15 85 74 33 34
 Card 220:  7 42 25 84 54 11 88  6 55 73 | 86  5 82 70 49 80 21 36 16 34 17 77 44 74 61  1  4 39 45 47  3 81 57 60 24
-"""
-#endregion
+`
 
-import re
-
-class Card:
-    number = 0
-    winning_numbers = []
-    my_numbers = []
-
-    def __init__(self, line) -> None:
-        self.number = int(re.search(r'\d+', line).group())
-        self.winning_numbers = list(filter(lambda l: len(l) > 0, line.split(':')[1].split('|')[0].split(' ')))
-        self.my_numbers = list(filter(lambda l: len(l) > 0, line.split(':')[1].split('|')[1].split(' ')))
-
-    def __str__(self) -> str:
-        return "Card %s: Winners: %s Actual: %s Worth: %s" % (self.number, ','.join(self.winning_numbers), ','.join(self.my_numbers), str(self.get_value()))
-    
-    def get_no_matches(self):
-        intersection = [value for value in self.winning_numbers if value in self.my_numbers]
-
-        return len(intersection)
-    
-    def get_value(self):
-        num_matches = self.get_no_matches()
-
-        if num_matches == 0:
-            return 0
-        elif num_matches == 1:
-            return 1
-        else:
-            val = 1
-            for i in range(num_matches-1):
-                val = val * 2
-            return val
-
-        
-
-def solve1(input):
-    lines = list(filter(lambda x: len(x) > 0, input.split('\n')))
-    cards = list(map(lambda x: Card(x), lines))
-
-    return sum(map(lambda x: x.get_value(), cards))
-
-def take_next_n(card, card_lookup):
-    matches = card.get_no_matches()
-
-    next_cards = []
-
-    for i in range(card.number, card.number + matches):
-        card_to_add = card_lookup[i+1] # start at next card
-        next_cards.append(card_to_add)
-
-    return next_cards
+class Card {
 
 
+    constructor(line) {
+        this.number = parseInt(line.match(/\d+/)[0]);
+        const lineSplits = line.split(":");
+        const pipeSplits = lineSplits[1].split("|");
+        this.winning_numbers = pipeSplits[0].split(" ").filter(x => x.length > 0);
+        this.my_numbers = pipeSplits[1].split(" ").filter(x => x.length > 0);
+    }
 
-def solve2(input):
-    lines = list(filter(lambda x: len(x) > 0, input.split('\n')))
-    card_list = list(map(lambda x: Card(x), lines))
-    # copy that can grow as we get more cards
-    cumulative_card_list = card_list.copy()
+    get_no_matches() {
+        return this.winning_numbers.filter(num => this.my_numbers.includes(num)).length;
+    }
 
-    # lookup for cards by number
-    card_lookup = {}
-    for card in card_list:
-        card_lookup[int(card.number)] = card
+    get_value() {
+        const num_matches = this.get_no_matches();
+        if (num_matches === 0) return 0;
+        else if (num_matches === 1) return 1;
+        else return Math.pow(2, num_matches - 1);
+    }
+}
 
-    # For each card, find the next n cards to be added. 
-    for c in cumulative_card_list:
-        if c.get_no_matches() > 0:
-            cumulative_card_list.extend(take_next_n(c, card_lookup))
+function solve1(input) {
+    const lines = input.split("\n").filter(x => x.length > 0);
+    const cards = lines.map(line => new Card(line));
+    return cards.reduce((sum, card) => sum + card.get_value(), 0);
+}
 
-    return len(cumulative_card_list)
+function take_next_n(card, card_lookup) {
+    const matches = card.get_no_matches(), next_cards = [];
+    for(let i = card.number; i < card.number + matches; i++) next_cards.push(card_lookup[i + 1]);
+    return next_cards;
+}
 
+function solve2(input) {
+    const lines = input.split("\n").filter(x => x.length > 0);
+    const card_list = lines.map(line => new Card(line));
+    // Shallow copy the array
+    const cumulative_card_list = card_list.slice();
+    const card_lookup = {};
+    for(let card of card_list)
+        card_lookup[card.number] = card;
 
+    for(let c of cumulative_card_list) {
+        if(c.get_no_matches() > 0) {
+            cumulative_card_list.push(...take_next_n(c, card_lookup));
+        }
+    }
+    return cumulative_card_list.length;
+}
 
-
-t1 = solve1(test_input1)
-print("Test Solution 1", t1)
-assert t1 == 13, "Test 1 failed: %d" % t1
-
-a1 = solve1(actual_input)
-print("Actual, Solution 1", a1)
-
-t2 = solve2(test_input1)
-assert t2 == 30, "Test 2 failed: %d" % t2
-
-a2 = solve2(actual_input)
-print("Actual, Solution 1", a2)
+console.log(solve2(actual_input))
