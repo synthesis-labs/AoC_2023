@@ -31,7 +31,6 @@ var GenerateCollections = (List<string> lines) =>
 
 var ProcessInputStep1 = (List<string> lines) =>
 {
-    var winnings = new List<int>();
     var collection = GenerateCollections(lines);
 
     var matchingList = collection.NumberCollection.Select(q => {
@@ -39,7 +38,7 @@ var ProcessInputStep1 = (List<string> lines) =>
             return Convert.ToInt32(Math.Pow(2, matching.Count() - 1));
         }).ToList();
 
-    return winnings;
+    return matchingList;
 };
 
 
