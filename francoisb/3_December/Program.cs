@@ -57,25 +57,21 @@ var ProcessInputStep1 = (List<string> lines) =>
     
     foreach(var special in collection.SpecialCollection)
     {
-        var prevNumbers = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) && 
+        var numberList = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) && 
                 (q.Indexes.Contains(special.Index) || 
                  q.Indexes.Contains(special.Index - 1) || 
                  q.Indexes.Contains(special.Index + 1))).ToList();
-        var nextNumbers = collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
+        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
                 (q.Indexes.Contains(special.Index) ||
                  q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList();
-        var curNumbers = collection.NumberCollection.Where(q => q.Line == special.Line &&
+                 q.Indexes.Contains(special.Index + 1))).ToList());
+        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == special.Line &&
                 (q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList();
+                 q.Indexes.Contains(special.Index + 1))).ToList());
 
-        partnum.AddRange(prevNumbers.Select(q => q.Numbers).ToList());
-        partnum.AddRange(nextNumbers.Select(q => q.Numbers).ToList());
-        partnum.AddRange(curNumbers.Select(q => q.Numbers).ToList());
+        partnum.AddRange(numberList.Select(q => q.Numbers).ToList());
 
-        collection.NumberCollection = collection.NumberCollection.Where(q => !prevNumbers.Contains(q)).ToList();
-        collection.NumberCollection = collection.NumberCollection.Where(q => !nextNumbers.Contains(q)).ToList();
-        collection.NumberCollection = collection.NumberCollection.Where(q => !curNumbers.Contains(q)).ToList();
+        collection.NumberCollection = collection.NumberCollection.Where(q => !numberList.Contains(q)).ToList();
     }
 
     return partnum;
@@ -89,55 +85,27 @@ var ProcessInputStep2 = (List<string> lines) =>
 
     foreach (var special in collection.SpecialCollection)
     {
-        var prevNumbers = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) &&
+        var numberList = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) &&
                 (q.Indexes.Contains(special.Index) ||
                  q.Indexes.Contains(special.Index - 1) ||
                  q.Indexes.Contains(special.Index + 1))).ToList();
-        var nextNumbers = collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
+        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
                 (q.Indexes.Contains(special.Index) ||
                  q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList();
-        var curNumbers = collection.NumberCollection.Where(q => q.Line == special.Line &&
+                 q.Indexes.Contains(special.Index + 1))).ToList());
+        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == special.Line &&
                 (q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList();
+                 q.Indexes.Contains(special.Index + 1))).ToList());
+
 
         var calc = 0;
-        var prevCount = prevNumbers.Count();
-        var nextCount = nextNumbers.Count();
-        var curCount = curNumbers.Count();
 
-        if(prevCount == 2 && nextCount == 0 && curCount == 0)
+        if(numberList.Count() == 2)
         {
-            calc = prevNumbers[0].Numbers * prevNumbers[1].Numbers;
-        }
-
-        if (prevCount == 0 && nextCount == 2 && curCount == 0)
-        {
-            calc = nextNumbers[0].Numbers * nextNumbers[1].Numbers;
-        }
-
-        if (prevCount == 0 && nextCount == 0 && curCount == 2)
-        {
-            calc = curNumbers[0].Numbers * curNumbers[1].Numbers;
-        }
-
-        if (prevCount == 1 && nextCount == 1 && curCount == 0)
-        {
-            calc = prevNumbers.First().Numbers * nextNumbers.First().Numbers;
-        }
-
-        if (prevCount == 1 && nextCount == 0 && curCount == 1)
-        {
-            calc = prevNumbers.First().Numbers * curNumbers.First().Numbers;
-        }
-
-        if (prevCount == 0 && nextCount == 1 && curCount == 1)
-        {
-            calc = nextNumbers.First().Numbers * curNumbers.First().Numbers;
+            calc = numberList[0].Numbers * numberList[1].Numbers;
         }
 
         partnum.Add(calc);
-
     }
 
     return partnum;
