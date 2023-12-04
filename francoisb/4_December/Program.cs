@@ -12,9 +12,6 @@
     return result;
 };
 
-var GetNumber = (string input, string color, string defaultvalue = "0") => int.Parse((input.Split(',').FirstOrDefault(q => q.Contains(color, StringComparison.InvariantCultureIgnoreCase)) ?? defaultvalue).Replace(" ", "").Replace(color, "", StringComparison.InvariantCultureIgnoreCase));
-
-
 var GenerateCollections = (List<string> lines) =>
 {
     var numCollection = new List<NumberList>();
@@ -34,17 +31,14 @@ var GenerateCollections = (List<string> lines) =>
 
 var ProcessInputStep1 = (List<string> lines) =>
 {
-    var winnings = new List<int>();
     var collection = GenerateCollections(lines);
 
-    foreach (var game in collection.NumberCollection)
-    {
-        var matching = game.SelectedNumbers.Where(q => game.WinningNumbers.Contains(q)).ToList();
+    var matchingList = collection.NumberCollection.Select(q => {
+            var matching = q.SelectedNumbers.Where(s => q.WinningNumbers.Contains(s));
+            return Convert.ToInt32(Math.Pow(2, matching.Count() - 1));
+        }).ToList();
 
-        winnings.Add(Convert.ToInt32(Math.Pow(2, matching.Count()-1)));
-    }
-
-    return winnings;
+    return matchingList;
 };
 
 
@@ -58,12 +52,12 @@ var ProcessInputStep2 = (List<string> lines) =>
     {
         var game = collection.NumberCollection[iter];
         var matching = game.SelectedNumbers.Where(q => game.WinningNumbers.Contains(q)).ToList();
-
+        
         for(var i = 1; i <= matching.Count(); i++)
         {
             var newGame = collection.NumberCollection.FirstOrDefault(q => q.GameNumber == game.GameNumber + i);
             if (newGame == null) break;
-            if (newGame != null) collection.NumberCollection.Add(newGame);
+            collection.NumberCollection.Add(newGame);
         }
 
         iter++;
