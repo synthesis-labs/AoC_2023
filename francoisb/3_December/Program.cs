@@ -57,17 +57,13 @@ var ProcessInputStep1 = (List<string> lines) =>
     
     foreach(var special in collection.SpecialCollection)
     {
-        var numberList = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) && 
+        var numberList = collection.NumberCollection.Where(q => 
+                (q.Line == (special.Line - 1) || 
+                 q.Line == (special.Line + 1) || 
+                 q.Line == special.Line) && 
                 (q.Indexes.Contains(special.Index) || 
                  q.Indexes.Contains(special.Index - 1) || 
                  q.Indexes.Contains(special.Index + 1))).ToList();
-        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
-                (q.Indexes.Contains(special.Index) ||
-                 q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList());
-        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == special.Line &&
-                (q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList());
 
         partnum.AddRange(numberList.Select(q => q.Numbers).ToList());
 
@@ -85,18 +81,13 @@ var ProcessInputStep2 = (List<string> lines) =>
 
     foreach (var special in collection.SpecialCollection)
     {
-        var numberList = collection.NumberCollection.Where(q => q.Line == (special.Line - 1) &&
+        var numberList = collection.NumberCollection.Where(q =>
+                (q.Line == (special.Line - 1) ||
+                 q.Line == (special.Line + 1) ||
+                 q.Line == special.Line) &&
                 (q.Indexes.Contains(special.Index) ||
                  q.Indexes.Contains(special.Index - 1) ||
                  q.Indexes.Contains(special.Index + 1))).ToList();
-        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == (special.Line + 1) &&
-                (q.Indexes.Contains(special.Index) ||
-                 q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList());
-        numberList.AddRange(collection.NumberCollection.Where(q => q.Line == special.Line &&
-                (q.Indexes.Contains(special.Index - 1) ||
-                 q.Indexes.Contains(special.Index + 1))).ToList());
-
 
         var calc = 0;
 
