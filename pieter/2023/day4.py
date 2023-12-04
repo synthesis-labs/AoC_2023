@@ -8,7 +8,12 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 """
 
 test_input2="""
-
+Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
+Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
+Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
+Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 """
 
 actual_input="""
@@ -240,25 +245,31 @@ class Card:
     number = 0
     winning_numbers = []
     my_numbers = []
+    processed = False
 
     def __init__(self, line) -> None:
-        self.number = re.search(r'\d+', line).group()
+        self.number = int(re.search(r'\d+', line).group())
         self.winning_numbers = list(filter(lambda l: len(l) > 0, line.split(':')[1].split('|')[0].split(' ')))
         self.my_numbers = list(filter(lambda l: len(l) > 0, line.split(':')[1].split('|')[1].split(' ')))
 
     def __str__(self) -> str:
         return "Card %s: Winners: %s Actual: %s Worth: %s" % (self.number, ','.join(self.winning_numbers), ','.join(self.my_numbers), str(self.get_value()))
     
-    def get_value(self):
+    def get_no_matches(self):
         intersection = [value for value in self.winning_numbers if value in self.my_numbers]
 
-        if len(intersection) == 0:
+        return len(intersection)
+    
+    def get_value(self):
+        num_matches = self.get_no_matches()
+
+        if num_matches == 0:
             return 0
-        elif len(intersection) == 1:
+        elif num_matches == 1:
             return 1
         else:
             val = 1
-            for i in range(len(intersection)-1):
+            for i in range(num_matches-1):
                 val = val * 2
             return val
 
@@ -274,10 +285,49 @@ def solve1(input):
         total = total + card.get_value()
     return total
 
+def take_next_n(card, card_lookup):
+    matches = card.get_no_matches()
 
-t1 = solve1(test_input1)
-print(t1)
-assert t1 == 13, "Test 1 failed: %d" % t1
+    next_cards = []
 
-a1 = solve1(actual_input)
-print(a1)
+    for i in range(card.number, card.number + matches):
+        card_to_add = card_lookup[i+1] # start at next card
+        print(f"Card {card.number}: adding Card {card_to_add.number}")
+        next_cards.append(card_to_add)
+
+    return next_cards
+
+
+
+def solve2(input):
+    lines = list(filter(lambda x: len(x) > 0, input.split('\n')))
+
+    card_list = list(map(lambda x: Card(x), lines))
+    cumulative_card_list = card_list.copy()
+    card_lookup = {}
+
+    for card in card_list:
+        card_lookup[int(card.number)] = card
+
+    for c in cumulative_card_list:
+        if c.get_no_matches() > 0:
+            cumulative_card_list.extend(take_next_n(c, card_lookup))
+            c.processed = True
+
+    return len(cumulative_card_list)
+
+
+
+
+# t1 = solve1(test_input1)
+# print(t1)
+# assert t1 == 13, "Test 1 failed: %d" % t1
+
+# a1 = solve1(actual_input)
+# print(a1)
+
+t2 = solve2(test_input1)
+assert t2 == 30, "Test 2 failed: %d" % t2
+
+a2 = solve2(actual_input)
+print(a2)
