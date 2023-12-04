@@ -2,7 +2,6 @@ param([string] $InputFile)
 
 $cards = cat $InputFile | sls ": (.+) \| (.+)" | % {
     $winningNumbers = $_.Matches.Groups[1].Value -split '\s+'
-    $card = $_.Matches.Groups[2].Value -split '\s+'
     $count = ($_.Matches.Groups[2].Value -split '\s+' | ? { $winningNumbers -Contains $_ } | measure).Count
     $points = $count -eq 0 ? 0 : [Math]::Pow(2, $count - 1)
     @{ Count = $count; Points = $points; Instances = 1; }
