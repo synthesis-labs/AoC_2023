@@ -21,58 +21,16 @@ public class Advent_Day3 {
         return partNumbersSum;
     }
 
-    public int Part2(ArrayList<String> gameRecords) {
-        int powerOfSetsSum = 0;
+    public int Part2(ArrayList<String> engineSchema) {
 
-        for (String game : gameRecords) {
-            String _gameID = "gameID";
-            String _sets = "sets";
-            int minRedNeeded = 0;
-            int minGreenNeeded = 0;
-            int minBlueNeeded = 0;
+        HashMap<Integer, ArrayList<Integer>> asteriskCoordinates = findAsteriskCoordinates(engineSchema);
+        List<Integer> gearRatios = findGearRatios(engineSchema, asteriskCoordinates);
 
-            int gameID = -1;
-            String setsString = "";
-            boolean gamePossible = true;
+        int gearRatiosSum = gearRatios.stream().mapToInt(Integer::intValue).sum();
 
-            Pattern pattern_GameID_Sets = Pattern.compile("^Game (?<" + _gameID + ">\\d+):(?<" + _sets + ">.*)");
-            Matcher matcher_GameID_Sets = pattern_GameID_Sets.matcher(game);
-
-            if (matcher_GameID_Sets.find()) {
-                gameID = Integer.parseInt(matcher_GameID_Sets.group(_gameID));
-                setsString = matcher_GameID_Sets.group(_sets);
-
-                String[] setsArray = setsString.split(";");
-
-                for (String set : setsArray) {
-                    String _red = "red";
-                    String _green = "green";
-                    String _blue = "blue";
-
-                    Pattern pattern_redCubes = Pattern.compile(".*?(?<" + _red + ">\\d+)\\s" + _red);
-                    Pattern pattern_greenCubes = Pattern.compile(".*?(?<" + _green + ">\\d+)\\s" + _green);
-                    Pattern pattern_blueCubes = Pattern.compile(".*?(?<" + _blue + ">\\d+)\\s" + _blue);
-
-                    Matcher matcher_redCubes = pattern_redCubes.matcher(set);
-                    Matcher matcher_greenCubes = pattern_greenCubes.matcher(set);
-                    Matcher matcher_blueCubes = pattern_blueCubes.matcher(set);
-
-                    int redCubes = matcher_redCubes.find() ? Integer.parseInt(matcher_redCubes.group(_red)) : 0;
-                    int greenCubes = matcher_greenCubes.find() ? Integer.parseInt(matcher_greenCubes.group(_green)) : 0;
-                    int blueCubes = matcher_blueCubes.find() ? Integer.parseInt(matcher_blueCubes.group(_blue)) : 0;
-
-                    minRedNeeded = Math.max(redCubes, minRedNeeded);
-                    minGreenNeeded = Math.max(greenCubes, minGreenNeeded);
-                    minBlueNeeded = Math.max(blueCubes, minBlueNeeded);
-                }
-            }
-            int powerOfSet = minRedNeeded * minGreenNeeded * minBlueNeeded;
-
-            powerOfSetsSum += powerOfSet;
-        }
-
-        return powerOfSetsSum;
+        return gearRatiosSum;
     }
+
 
     public HashMap<String, String> findNumbersAdjacentToSymbolHorizontal(String schematicLine) {
         String _num = "num";
@@ -117,7 +75,7 @@ public class Advent_Day3 {
      * @param schema
      * @return
      */
-    public HashMap<Integer, HashMap<Integer, Integer>> findNumberCoordinates(ArrayList<String> schema) {
+    public HashMap<Integer, HashMap<Integer, Integer>> findNumberCoordinates(List<String> schema) {
         String _num = "num";
 
         HashMap<Integer, HashMap<Integer, Integer>> numberCoordinates = new HashMap<>();
@@ -144,7 +102,41 @@ public class Advent_Day3 {
 
     }
 
-    public List<Integer> findPartNumbers(ArrayList<String> schema, HashMap<Integer, HashMap<Integer, Integer>> numberCoordinates) {
+    /**
+     * Find the asterisk coordinates.
+     * <p>
+     * HashMap <row, Hashmap<start, end?>
+     *
+     * @param schema
+     * @return
+     */
+    public HashMap<Integer, ArrayList<Integer>> findAsteriskCoordinates(ArrayList<String> schema) {
+        String _gear = "gear";
+
+        HashMap<Integer, ArrayList<Integer>> gearCoordinates = new HashMap<>();
+
+        for (int row = 0; row < schema.size(); row++) {
+
+            String schematicLine = schema.get(row);
+
+            Pattern asteriskPattern = Pattern.compile("[^\\*]*(?<gear>\\*)[^\\*]*?");
+            Matcher asteriskMatcher = asteriskPattern.matcher(schematicLine);
+
+
+            while (asteriskMatcher.find()) {
+                gearCoordinates.putIfAbsent(row, new ArrayList<>());
+
+                int startIndexInclusive = asteriskMatcher.start(_gear);
+
+                gearCoordinates.get(row).add(startIndexInclusive);
+            }
+
+        }
+
+        return gearCoordinates;
+    }
+
+    public List<Integer> findPartNumbers(ArrayList<String> engineSchema, HashMap<Integer, HashMap<Integer, Integer>> numberCoordinates) {
 
         List<Integer> partNumbers = new ArrayList<>();
 
@@ -159,7 +151,7 @@ public class Advent_Day3 {
                 HashMap<Integer, Integer> thisRowCoordinates = numberCoordinates.get(row);
 
                 // Get the row from the schema:
-                String thisSchematicLine = schema.get(row);
+                String thisSchematicLine = engineSchema.get(row);
 
 
                 // For each start coordinate:
@@ -190,7 +182,7 @@ public class Advent_Day3 {
                         if (!isPartNumber && numberCoordinates.containsKey(previousRow)) {
 
                             // Get the row from the schema:
-                            String previousSchematicLine = schema.get(previousRow);
+                            String previousSchematicLine = engineSchema.get(previousRow);
 
                             // Get the string to check:
                             int previousStart = startIndexInclusive - 1 > 0 ? startIndexInclusive - 1 : 0;
@@ -211,7 +203,7 @@ public class Advent_Day3 {
                         if (!isPartNumber && numberCoordinates.containsKey(nextRow)) {
 
                             // Get the row from the schema:
-                            String nextSchematicLine = schema.get(nextRow);
+                            String nextSchematicLine = engineSchema.get(nextRow);
 
                             // Get the string to check:
                             int nextStart = startIndexInclusive - 1 > 0 ? startIndexInclusive - 1 : 0;
@@ -241,5 +233,113 @@ public class Advent_Day3 {
         }
 
         return partNumbers;
+    }
+
+
+    private List<Integer> findGearRatios(List<String> engineSchema, HashMap<Integer, ArrayList<Integer>> asteriskCoordinates) {
+
+        List<Integer> gearRatios = new ArrayList<>();
+
+//        Pattern symbolPattern = Pattern.compile("[^\\\\.a-zA-Z\\d]");
+
+
+        // For each row coordinate:
+        for (int thisRow = 0; thisRow < engineSchema.size(); thisRow++) {
+
+            if (asteriskCoordinates.containsKey(thisRow)) {
+
+                // Part numbers can be in previous row, next row or same row.
+                int previousRow = thisRow - 1;
+                int nextRow = thisRow + 1;
+
+                ArrayList<Integer> thisRowCoordinates = asteriskCoordinates.get(thisRow);
+
+                // Get the row from the schema:
+                String thisSchematicLine = engineSchema.get(thisRow);
+                String previousSchematicLine = previousRow > -1 ? engineSchema.get(previousRow) : null;
+                String nextSchematicLine = nextRow < engineSchema.size() ? engineSchema.get(nextRow) : null;
+
+                // For each start coordinate:
+                for (int thisAsteriskCoordinate : thisRowCoordinates) {
+
+                    List<Integer> thisGearNums = new ArrayList<>();
+
+                    // Look for part numbers around asterisk:
+                    Pattern numberPattern = Pattern.compile("\\D?(?<num>\\b\\d+)\\D?");
+
+
+                    // this line:
+                    Matcher thisLineMatcher = numberPattern.matcher(thisSchematicLine);
+
+                    while (thisLineMatcher.find()) {
+                        int num = Integer.parseInt(thisLineMatcher.group("num"));
+
+                        int numStart = thisLineMatcher.start("num");
+                        int numEnd = thisLineMatcher.end("num");
+
+                        // Check if this number is next to our coordinate:
+
+                        boolean numToLeft = numEnd == thisAsteriskCoordinate;
+                        boolean numToRight = numStart == thisAsteriskCoordinate + 1;
+
+                        if (numToLeft || numToRight) {
+                            thisGearNums.add(num);
+                        }
+                    }
+
+                    // previous line:
+                    if (previousSchematicLine != null) {
+                        Matcher previousLineMatcher = numberPattern.matcher(previousSchematicLine);
+
+                        while (previousLineMatcher.find()) {
+                            int num = Integer.parseInt(previousLineMatcher.group("num"));
+
+                            int numStart = previousLineMatcher.start("num");
+                            int numEnd = previousLineMatcher.end("num");
+
+                            // Check if this number is above our coordinate:
+
+                            boolean numAboveToLeft = numEnd == thisAsteriskCoordinate;
+                            boolean numAboveToRight = numStart == thisAsteriskCoordinate + 1;
+                            boolean numAboveCenter = thisAsteriskCoordinate >= numStart && thisAsteriskCoordinate < numEnd;
+
+                            if (numAboveToLeft || numAboveToRight || numAboveCenter) {
+                                thisGearNums.add(num);
+                            }
+                        }
+                    }
+
+                    // next line:
+                    if (nextSchematicLine != null) {
+                        Matcher nextLineMatcher = numberPattern.matcher(nextSchematicLine);
+
+                        while (nextLineMatcher.find()) {
+                            int num = Integer.parseInt(nextLineMatcher.group("num"));
+
+                            int numStart = nextLineMatcher.start("num");
+                            int numEnd = nextLineMatcher.end("num");
+
+                            // Check if this number is below our coordinate:
+
+                            boolean numBelowToLeft = numEnd == thisAsteriskCoordinate;
+                            boolean numBelowToRight = numStart == thisAsteriskCoordinate + 1;
+                            boolean numBelowCenter = thisAsteriskCoordinate >= numStart && thisAsteriskCoordinate < numEnd;
+
+                            if (numBelowToLeft || numBelowToRight || numBelowCenter) {
+                                thisGearNums.add(num);
+                            }
+                        }
+                    }
+
+                    // Check if this is a gear ratio and multiply the two nums to get the gear ratio:
+                    if (thisGearNums.size() == 2) {
+                        int gearRatio = thisGearNums.get(0) * thisGearNums.get(1);
+                        gearRatios.add(gearRatio);
+                    }
+                }
+            }
+        }
+
+        return gearRatios;
     }
 }
