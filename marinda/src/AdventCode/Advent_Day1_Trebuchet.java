@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Advent_Day1 {
+public class Advent_Day1_Trebuchet {
 
     public int Part1_CalculateCalibrationValuesSum(ArrayList<String> calibrationValues) {
         int calibrationSum = 0;
@@ -53,7 +53,7 @@ public class Advent_Day1 {
             int firstDigitIndex_int = matcher_firstDigit_int.find() ? matcher_firstDigit_int.start(_firstDigit) : -1;
             int firstDigitIndex_word = matcher_firstDigit_word.find() ? matcher_firstDigit_word.start(_firstDigit) : -1;
 
-            String firstDigit = (firstDigitIndex_int != -1 && firstDigitIndex_int < firstDigitIndex_word) || firstDigitIndex_word == -1?
+            String firstDigit = (firstDigitIndex_int != -1 && firstDigitIndex_int < firstDigitIndex_word) || firstDigitIndex_word == -1 ?
                     matcher_firstDigit_int.group(_firstDigit) :
                     wordToNumber_HelperMethod(matcher_firstDigit_word.group(_firstDigit));
 

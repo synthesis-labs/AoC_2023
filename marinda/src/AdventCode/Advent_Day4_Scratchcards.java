@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Advent_Day3 {
+public class Advent_Day4_Scratchcards {
 
-    public Advent_Day3() {
+    public Advent_Day4_Scratchcards() {
     }
 
     public int Part1(ArrayList<String> engineSchema) {
