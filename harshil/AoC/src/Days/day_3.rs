@@ -20,11 +20,21 @@ pub fn get_Index_number(line:String,indicies: Vec<i32>){
 
 pub fn get_number(line:String) -> Vec<i32>{
     let mut numbers:Vec<i32> = vec![];
-    let mut tnum:String;
+    let mut tnum:String=String::new();
     for (index, char) in line.char_indices() {
         if line.chars().nth(index).unwrap().is_digit(10) {
-            tnum.push(line.chars().nth(index).and_then(|x| x.to_digit(10)).map(|d| d as char).unwrap_or('0'))
+            tnum.push(
+                line.chars()
+                    .nth(index)
+                    .and_then(|c| c.to_digit(10))
+                    .and_then(|d| std::char::from_digit(d, 10))
+                    .unwrap_or('0'),
+            );
+        }else {
+            numbers.push(tnum.parse().unwrap());
+            tnum=String::new();
         }
     }
+    println!("{:?}", numbers);
     return numbers
 }
