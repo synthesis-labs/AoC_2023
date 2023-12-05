@@ -116,7 +116,7 @@ public abstract class Day05Q2Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "289863851";
+        return "60568880";
     }
 
     public static class Solution1Tests extends Day05Q2Tests
