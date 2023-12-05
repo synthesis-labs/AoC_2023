@@ -1,6 +1,5 @@
 package Tests;
 
-import AdventCode.Advent_Day3_GearRatios;
 import AdventCode.Advent_Day4_Scratchcards;
 import org.junit.Test;
 
@@ -98,7 +97,7 @@ public class Advent_Day4_Scratchcards_Tests {
 
         int scratchcardsPoints = advent_Day4.Part1(data);
 
-        assertEquals(13, scratchcardsPoints);
+        assertEquals(21568, scratchcardsPoints);
     }
     //endregion
 
@@ -142,34 +141,38 @@ public class Advent_Day4_Scratchcards_Tests {
     //region Part 2:
     @Test
     public void Part2_Test_SampleData() {
-        Advent_Day3_GearRatios Advent_Day3 = new Advent_Day3_GearRatios();
+        Advent_Day4_Scratchcards advent_Day4 = new Advent_Day4_Scratchcards();
+
+        int winningNumberCountForCard = advent_Day4.getWinningNumberCountPerCard(List.of(12, 5, 1, 6), List.of(3, 6, 2, 1, 10, 12));
+        assertEquals(3, winningNumberCountForCard);
 
         ArrayList<String> sampleData = new ArrayList<String>();
-        sampleData.add("467..114..");
-        sampleData.add("...*......");
-        sampleData.add("..35..633.");
-        sampleData.add("......#...");
-        sampleData.add("617*......");
-        sampleData.add(".....+.58.");
-        sampleData.add("..592.....");
-        sampleData.add("......755.");
-        sampleData.add("...$.*....");
-        sampleData.add(".664.598..");
+        sampleData.add("Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53");
+        sampleData.add("Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19");
+        sampleData.add("Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1");
+        sampleData.add("Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83");
+        sampleData.add("Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36");
+        sampleData.add("Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11");
 
-        int gearRatiosSum = Advent_Day3.Part2(sampleData);
 
-        assertEquals(467835, gearRatiosSum);
+        // Get card numbers for copied cards:
+        List<Integer> newCopies = advent_Day4.getListOfNewCopiesWonForCard(1, 3);
+        assertEquals("[2, 3, 4]", newCopies.toString());
+
+        int numberOfScratchcards = advent_Day4.Part2(sampleData);
+
+        assertEquals(30, numberOfScratchcards);
     }
 
     @Test
     public void Part2_Test_RealData() throws IOException {
-        Advent_Day3_GearRatios Advent_Day3 = new Advent_Day3_GearRatios();
+        Advent_Day4_Scratchcards advent_Day4 = new Advent_Day4_Scratchcards();
 
-        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day3_GearRatios_Data.txt"));
+        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day4_Scratchcards_Data.txt"));
 
-        int powerOfSetsSum = Advent_Day3.Part2(data);
+        int numberOfScratchcards = advent_Day4.Part2(data);
 
-        assertEquals(84159075, powerOfSetsSum);
+        assertEquals(11827296, numberOfScratchcards);
     }
     //endregion
 }
