@@ -1,6 +1,7 @@
 module Handy where
 
 import           Control.Monad              (join)
+import qualified Data.Set as Set
 import qualified Data.ByteString.Char8      as Char8 (pack)
 import qualified Data.ByteString.Lazy.Char8 as LChar8 (unpack)
 import           Data.String.Interpolate    (i)
@@ -88,6 +89,9 @@ takeUntilM predicate f (a:as) = do
       pure $ b : r
     else pure mempty
 
+unique :: (Eq a, Ord a) => [a] -> [a]
+unique = Set.toList . Set.fromList
+
 -- Make parameters nicer
 type Year = Int
 
@@ -138,3 +142,15 @@ get_puzzle_input which_input year day = do
   openFile (local_path <> local_file) ReadMode >>= hGetContents
 
 
+
+-- A filter
+(-|) :: [a] -> (a -> Bool) -> [a]
+(-|) = flip filter
+
+-- map
+(-+) :: [a] -> (a -> b) -> [b]
+(-+) = flip (<$>)
+
+-- flatmap
+(-*) :: [a] -> (a -> [b]) -> [b]
+(-*) = flip concatMap

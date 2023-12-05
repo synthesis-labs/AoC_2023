@@ -36,21 +36,18 @@ pub fn day1pt2(){
 
     let mut sum: i32 = 0;
 
-    for line in contents.lines() {
+    for mut line in contents.lines() {
         println!("{}", line);
 
         let mut calval = String::new();
 
+        let mut line= replace(line);
+        println!("{}", line);
         // Find the first numeric character or word
         for c in line.chars() {
             if c.is_numeric() {
                 calval.push(c);
                 println!("numer: {}", c);
-                break;
-            } else if let Some(index) = words.iter().position(|&s| line.starts_with(s)) {
-                calval.push_str(&(index + 1).to_string());
-                println!("string : {}", calval);
-
                 break;
             }
         }
@@ -61,18 +58,27 @@ pub fn day1pt2(){
                 calval.push(c);
                 println!("numer: {}", c);
                 break;
-            } else if let Some(index) = words.iter().position(|&s| line.ends_with(s)) {
-                calval.insert(0, (index + 1).to_string().chars().next().unwrap());
-                println!("string: {}", calval);
-                break;
             }
         }
-
-        sum += calval;
-
+        let icalval:i32=calval.parse().unwrap();
+        sum += icalval;
     }
+    println!("{}", sum);
 }
 
+pub fn replace(line: &str) -> String {
+    let mut mod_line=line.replace("one", "o1e")
+        .replace("two", "t2o")
+        .replace("three", "t3e")
+        .replace("four", "f4r")
+        .replace("five", "f5e")
+        .replace("six", "s6x")
+        .replace("seven", "s7n")
+        .replace("eight", "e8t")
+        .replace("nine", "n9e");
+    println!("{}",mod_line);
+    return mod_line;
+}
 /*
  let mut words: Vec<&str> = Vec::new();
     words.push("one");
