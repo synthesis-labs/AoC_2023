@@ -1,9 +1,8 @@
-use std::{error::Error, collections::HashSet};
+use std::{collections::HashSet};
 
 use regex::Regex;
 
-
-type Res<T> = Result<T, Box<dyn Error>>;
+use crate::common::Res;
 
 #[derive(Eq, Clone)]
 #[derive(PartialEq)]
