@@ -125,7 +125,7 @@ public abstract class Day05Q2Tests extends TestBase
     /**
      * Single Threaded
      */
-    public static class Solution1Tests extends Day05Q2Tests
+    public static class Solution1SingleThreadedTests extends Day05Q2Tests
     {
         public record GroupText(String groupName, String text) {}
         public record MapInfo(long destinationRangeStart, long sourceRangeStart, long rangeLength) {}
@@ -272,7 +272,7 @@ public abstract class Day05Q2Tests extends TestBase
     /**
      * Multi Threaded
      */
-    public static class Solution2Tests extends Day05Q2Tests
+    public static class Solution2MultiThreadedTests extends Day05Q2Tests
     {
         public record GroupText(String groupName, String text) {}
         public record MapInfo(long destinationRangeStart, long sourceRangeStart, long rangeLength) {}
@@ -424,6 +424,189 @@ public abstract class Day05Q2Tests extends TestBase
         public void testSample()
         {
             super.testSample();
+        }
+
+        private long getMappedResult(long input, TreeMap<Long, MapInfo> map)
+        {
+            // Find the first entry closest to the value:
+            Map.Entry<Long, MapInfo> entry = map.floorEntry(input);
+            if (entry == null) return input;
+
+            // Unpack the entry:
+            Long mapInfoKey = entry.getKey();
+            MapInfo mapInfoValue = entry.getValue();
+
+            // Work out the offset from the entry:
+            long offset = input - mapInfoValue.sourceRangeStart;
+
+            // Make sure the entry is in range:
+            if (offset < mapInfoValue.rangeLength)
+            {
+                // We are within range.
+
+                // Get the destination result:
+                long result = mapInfoValue.destinationRangeStart() + offset;
+                return result;
+            }
+
+            return input;
+        }
+
+        private TreeMap<Long, MapInfo> indexMapInfoBySourceStart(GroupSplits seedToSoilGroup)
+        {
+            TreeMap<Long, MapInfo> result = new TreeMap<>();
+            seedToSoilGroup.numbers.forEach(mi -> result.put(mi.sourceRangeStart, mi));
+            return result;
+        }
+
+    }
+
+    /**
+     * Single Threaded with Caches
+     */
+    public static class Solution1SingleThreadedWithCachesTests extends Day05Q2Tests
+    {
+        public record GroupText(String groupName, String text) {}
+        public record MapInfo(long destinationRangeStart, long sourceRangeStart, long rangeLength) {}
+        public record GroupSplits(String groupName, List<MapInfo> numbers) {}
+
+        public record Seed(long seedNumber) {}
+        public record SeedRange(long seedStart, long length) {}
+
+        public record MappingResult(
+                long seedNumber,
+                long soilNumber,
+                long fertilizerNumber,
+                long waterNumber,
+                long lightNumber,
+                long temperatureNumber,
+                long humidityNumber,
+                long locationNumber)
+        {
+        }
+
+        @Test
+        @Override
+        public void testSolution() throws IOException
+        {
+            super.testSolution();
+        }
+
+        /**
+         * This tests that the {@link #solve(String) solution}
+         * gets the {@link #getSampleAnswer() sample answer}
+         * by using the {@link #getSampleInput() sample input}.
+         */
+        @Test
+        @Override
+        public void testSample()
+        {
+            super.testSample();
+        }
+
+        @Override
+        public String solve(String input)
+        {
+            // Strip off the first line for the seeds:
+            var seedInfo = Arrays.stream(input.split("\n\n")).limit(1).findFirst().get();
+
+            // Parse the seed ranges:
+            List<Long> seedNumbers = Arrays.stream(seedInfo.split(": ")[1].split("\\s+")).map(Long::parseLong).toList();
+            List<SeedRange> seedRanges = new ArrayList<>();
+            for (int i = 0; i < seedNumbers.size()/2; i++)
+            {
+                // Create the seed range:
+                var seedRange = new SeedRange(seedNumbers.get(i << 1), seedNumbers.get((i << 1) + 1));
+
+                // Save the range:
+                seedRanges.add(seedRange);
+            }
+
+            // Create a map of the seeds:
+            Map<Long, Seed> seedMap = new HashMap<>();
+
+            // Parse the maps:
+            var groupedMapInfo = Arrays.stream(input.split("\n\n"))
+                    .skip(1)
+                    .map(s -> s.split(":\\n"))
+                    .map(s -> new GroupText(s[0], s[1]))
+                    .map(g -> new GroupSplits(g.groupName(), Arrays.stream(g.text().split("\\n")).map(s-> Arrays.stream(s.split("\\s+")).map(Long::parseLong).toList()).map(i-> new MapInfo(i.get(0), i.get(1), i.get(2))).toList()))
+                    .collect(Collectors.groupingBy(GroupSplits::groupName));
+
+            // Get the various bits of info:
+            GroupSplits seedToSoilGroup            = groupedMapInfo.get("seed-to-soil map").get(0);
+            GroupSplits soilToFertilizerGroup      = groupedMapInfo.get("soil-to-fertilizer map").get(0);
+            GroupSplits fertilizerToWaterGroup     = groupedMapInfo.get("fertilizer-to-water map").get(0);
+            GroupSplits waterToLightGroup          = groupedMapInfo.get("water-to-light map").get(0);
+            GroupSplits lightToTemperatureGroup    = groupedMapInfo.get("light-to-temperature map").get(0);
+            GroupSplits temperatureToHumidityGroup = groupedMapInfo.get("temperature-to-humidity map").get(0);
+            GroupSplits humidityToLocationGroup    = groupedMapInfo.get("humidity-to-location map").get(0);
+
+            // Index the map info:
+            TreeMap<Long, MapInfo> seedToSoilMap            = indexMapInfoBySourceStart(seedToSoilGroup            );
+            TreeMap<Long, MapInfo> soilToFertilizerMap      = indexMapInfoBySourceStart(soilToFertilizerGroup      );
+            TreeMap<Long, MapInfo> fertilizerToWaterMap     = indexMapInfoBySourceStart(fertilizerToWaterGroup     );
+            TreeMap<Long, MapInfo> waterToLightMap          = indexMapInfoBySourceStart(waterToLightGroup          );
+            TreeMap<Long, MapInfo> lightToTemperatureMap    = indexMapInfoBySourceStart(lightToTemperatureGroup    );
+            TreeMap<Long, MapInfo> temperatureToHumidityMap = indexMapInfoBySourceStart(temperatureToHumidityGroup );
+            TreeMap<Long, MapInfo> humidityToLocationMap    = indexMapInfoBySourceStart(humidityToLocationGroup    );
+
+            // Keep a cache of soil to location to speed up computation:
+            Map<Long, Long> soilToLocationCache = new HashMap<>();
+
+            // Keep track of the minimum locationNumber:
+            long minLocationNumber = Long.MAX_VALUE;
+
+            // Process each seed through the mappings:
+            for (int r = 0; r < seedRanges.size(); r++)
+            {
+                // Get the seed range:
+                var seedRange = seedRanges.get(r);
+                System.out.println("range: = " + r + " " + seedRange);
+
+                // Go through each seed in the range:
+                for (long i = 0, seedNumber = seedRange.seedStart(); i < seedRange.length(); i++, seedNumber++)
+                {
+                    // Map the entries:
+                    long soilNumber        = getMappedResult(seedNumber,        seedToSoilMap            );
+
+                    // Check whether we already have the cached answer:
+                    Long cachedLocation = soilToLocationCache.get(soilNumber);
+                    if (cachedLocation != null)
+                    {
+                        // We have a cached result.
+                        System.out.println(".");
+                    }
+                    else
+                    {
+                        // We don't have a cached result, so we have to compute the answer.
+                        long fertilizerNumber  = getMappedResult(soilNumber,        soilToFertilizerMap      );
+                        long waterNumber       = getMappedResult(fertilizerNumber,  fertilizerToWaterMap     );
+                        long lightNumber       = getMappedResult(waterNumber,       waterToLightMap          );
+                        long temperatureNumber = getMappedResult(lightNumber,       lightToTemperatureMap    );
+                        long humidityNumber    = getMappedResult(temperatureNumber, temperatureToHumidityMap );
+                        long locationNumber    = getMappedResult(humidityNumber,    humidityToLocationMap    );
+
+                        // Cache the location:
+                        soilToLocationCache.put(soilNumber, locationNumber);
+                        if (soilToLocationCache.size() > 1_000_000) soilToLocationCache.clear();
+
+                        // Create the structure:
+                        MappingResult mappingResult = new MappingResult(seedNumber, soilNumber, fertilizerNumber, waterNumber, lightNumber, temperatureNumber, humidityNumber, locationNumber);
+
+                        // Check if this is the smallest so far:
+                        if (locationNumber < minLocationNumber)
+                        {
+                            minLocationNumber = locationNumber;
+                            System.out.println("min mappingResult = " + mappingResult);
+                        }
+                    }
+                }
+            }
+
+            // Find the smallest location:
+
+            return Long.toString(minLocationNumber);
         }
 
         private long getMappedResult(long input, TreeMap<Long, MapInfo> map)
