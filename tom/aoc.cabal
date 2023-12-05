@@ -51,7 +51,7 @@ extra-doc-files:    CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-    ghc-options: -Wno-unused-imports
+    ghc-options: -O2 -Wno-unused-imports
     -- ghc-options: -Wall
 
 executable tom
@@ -107,6 +107,8 @@ executable tom
                       http-client-tls,
                       http-types,
                       string-interpolate,
+                      memoize,
+                      mtl,
                       parsec
 
     -- Directories containing source files.

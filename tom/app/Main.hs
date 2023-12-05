@@ -32,8 +32,8 @@ full = do
   putStrLn $ show d01
   d02 <- Day02.solve
   putStrLn $ show d02
-  -- d03 <- Day03.solve
-  -- putStrLn $ show d03
+  d03 <- Day03.solve
+  putStrLn $ show d03
   -- d04 <- Day04.solve
   -- putStrLn $ show d04
   -- d05 <- Day05.solve
@@ -81,7 +81,7 @@ full = do
 
 one :: IO ()
 one = do
-  d <- Day03.solve
+  d <- Day04.solve
   putStrLn $ show d
 
 wait :: IO ()
