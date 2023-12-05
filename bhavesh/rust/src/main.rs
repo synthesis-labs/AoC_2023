@@ -11,4 +11,6 @@ async fn main() {
     println!("Advent of Code 2023");
     println!("{}", days::day01::solve().await);
     println!("{}", days::day02::solve().await);
+    println!("{}", days::day03::solve().await);
+    println!("{}", days::day04::solve().await);
 }
