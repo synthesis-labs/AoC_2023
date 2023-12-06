@@ -13,4 +13,5 @@ async fn main() {
     println!("{}", days::day02::solve().await);
     println!("{}", days::day03::solve().await);
     println!("{}", days::day04::solve().await);
+    println!("{}", days::day05::solve().await);
 }
