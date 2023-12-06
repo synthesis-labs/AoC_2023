@@ -7,8 +7,8 @@ import           Data.List            (find)
 import           Data.Maybe           (fromMaybe)
 import qualified Data.Set             as Set
 import           Debug.Trace          (trace)
-import           Handy                (WhichPuzzleInput (..), get_puzzle_input,
-                                       unique)
+import           Handy                (SeekResult (..), WhichPuzzleInput (..),
+                                       get_puzzle_input, seeker, unique)
 import           Numeric.Search.Range (searchFromTo)
 import           Parsing              (run_parser, run_parser_with_state)
 import           Text.Parsec          (Parsec, anyChar, char, choice, digit,
@@ -77,30 +77,6 @@ solve2 (Plan seeds arrows) =
         (\(from, len) -> seeker (from) (from + len) mapper search_function) <$>
         seed_ranges
    in minimum $ snd <$> results
-
-data SeekResult a
-  = Skip -- Region is continuous, so skip it
-  | Continue -- Region is non-continuous, so keep searching
-  | Found (Int, a) -- Found the spot!
-
--- A magical binary search that will search the entire space looking for
--- interesting features (such as jumps in continuous space)
-seeker ::
-     Int
-  -> Int
-  -> (Int -> a)
-  -> ((Int, a) -> (Int, a) -> SeekResult a)
-  -> [(Int, a)]
-seeker start stop produce continuous =
-  let (startv, stopv) = (produce start, produce stop)
-   in case continuous (start, startv) (stop, stopv) of
-        Skip -> []
-        Found v -> [v]
-        Continue ->
-          let mid = (start + stop) `div` 2
-           -- Split the region and fork the search
-           in seeker start mid produce continuous ++
-              seeker mid stop produce continuous
 
 solve :: IO (Solution Int)
 solve = do
