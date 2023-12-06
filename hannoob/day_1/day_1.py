@@ -33,6 +33,6 @@ def calculate_problem2(lines):
         sum
     )
 
-lines = read_lines_from_file('input.txt')
+lines = read_lines_from_file('input1.txt')
 print(f"problem 1: {calculate_problem1(lines)}")
 print(f"problem 2: {calculate_problem2(lines)}")
