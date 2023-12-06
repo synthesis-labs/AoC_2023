@@ -7,27 +7,51 @@ import qualified Data.Map            as Map
 import           Data.Maybe          (fromMaybe)
 import qualified Data.Set            as Set
 import           Debug.Trace         (trace)
-import           Handy               (WhichPuzzleInput (..), get_puzzle_input,
-                                      unique)
+import           Handy               (SeekResult (..), WhichPuzzleInput (..),
+                                      get_puzzle_input, seeker, unique)
+import           Numeric.Search
 import           Parsing             (run_parser, run_parser_with_state)
 import           Text.Parsec         (Parsec, anyChar, char, choice, digit,
                                       getState, letter, many1, newline,
                                       optional, sepBy, setState, string, try,
                                       (<|>))
 
-parse_it :: Parsec String () ()
+type TimeDist = (Int, Int)
+
+parse_it :: Parsec String () [TimeDist]
 parse_it = do
-  pure ()
+  _ <- string "Time:" <* (many1 $ char ' ')
+  times <- (read <$> many1 digit) `sepBy` (many1 $ char ' ') <* newline
+  _ <- string "Distance:" <* (many1 $ char ' ')
+  dists <- (read <$> many1 digit) `sepBy` (many1 $ char ' ') <* newline
+  pure $ zip times dists
 
-solve1 :: () -> Int
-solve1 _ = 0
+travel :: Int -> Int -> Int
+travel held total = (held * (total - held))
 
-solve2 :: () -> Int
-solve2 _ = 0
+solve1 :: [TimeDist] -> Int
+solve1 input =
+  let results =
+        filter ((==) True) <$>
+        (\(race_t, record_d) ->
+           [record_d < travel h race_t | h <- [1 .. race_t]]) <$>
+        input
+   in product $ length <$> results
+
+fix_input :: [TimeDist] -> TimeDist
+fix_input input =
+  let time = read $ join $ (show . fst) <$> input
+      dist = read $ join $ (show . snd) <$> input
+   in (time, dist)
+
+-- Super slow bruteforce approach
+solve2 :: [TimeDist] -> Int
+solve2 input = solve1 [fix_input input]
 
 solve :: IO (Solution Int)
 solve = do
-  input <- pure () -- run_parser parse_it <$> get_puzzle_input Mine 2023 6
-  let solution_1 = solve1 input
-  let solution_2 = solve2 input
+  input <- run_parser parse_it <$> get_puzzle_input Mine 2023 6
+  putStrLn $ show input
+  solution_1 <- pure $ solve1 input
+  solution_2 <- pure $ solve2 input
   pure $ SolvedTwo 2023 6 solution_1 (Unknown) solution_2 (Unknown)
