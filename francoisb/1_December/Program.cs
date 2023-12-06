@@ -19,7 +19,7 @@ var ProcessInputStep1 = (string line) =>
     return int.Parse($"{convertedList.First()}{convertedList.Last()}");
 };
 
-Dictionary<string, string> numbers = new Dictionary<string, string>(){{"zero","ze0o"},{"one","o1e"},{"two","t2o"},{"three","th3ee"},{"four","fo4r"},{"five","fi5ve"},{"six","s6x"},{"seven","se7en"},{"eight","ei8ht"},{"nine","ni9ne"}};
+Dictionary<string, string> numbers = new Dictionary<string, string>(){{"zero","ze0o"},{"one","o1e"},{"two","t2o"},{"three","th3ee"},{"four","fo4r"},{"five","fi5e"},{"six","s6x"},{"seven","se7en"},{"eight","ei8ht"},{"nine","ni9e"}};
 
 var ProcessInputStep2 = (string line) =>
 {

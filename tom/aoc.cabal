@@ -99,6 +99,7 @@ executable tom
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.0.0,
+                      binary-search,
                       bytestring,
                       containers,
                       directory,
