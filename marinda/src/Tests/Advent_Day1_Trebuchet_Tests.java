@@ -1,6 +1,6 @@
 package Tests;
 
-import AdventCode.Advent_Day1;
+import AdventCode.Day1.Advent_Day1_Trebuchet;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -10,11 +10,11 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
-public class Advent_Day1_Tests {
+public class Advent_Day1_Trebuchet_Tests {
 
     @Test
-    public void Day1_Solution1_Test_SampleData(){
-        Advent_Day1 advent_day_1 = new Advent_Day1();
+    public void Day1_Solution1_Test_SampleData() {
+        Advent_Day1_Trebuchet advent_day_1 = new Advent_Day1_Trebuchet();
 
         ArrayList<String> sampleData = new ArrayList<String>();
         sampleData.add("1abc2");
@@ -29,9 +29,9 @@ public class Advent_Day1_Tests {
 
     @Test
     public void Day1_Solution1_Test_RealData() throws IOException {
-        Advent_Day1 advent_day_1 = new Advent_Day1();
+        Advent_Day1_Trebuchet advent_day_1 = new Advent_Day1_Trebuchet();
 
-        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day_1_Data.txt"));
+        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day1_Trebuchet_Data.txt"));
 
         int calibrationValuesSum = advent_day_1.Part1_CalculateCalibrationValuesSum(data);
 
@@ -39,8 +39,8 @@ public class Advent_Day1_Tests {
     }
 
     @Test
-    public void Day1_Solution2_Test_SampleData(){
-        Advent_Day1 advent_day_1 = new Advent_Day1();
+    public void Day1_Solution2_Test_SampleData() {
+        Advent_Day1_Trebuchet advent_day_1 = new Advent_Day1_Trebuchet();
 
         ArrayList<String> sampleData = new ArrayList<String>();
         sampleData.add("two1nine");
@@ -58,12 +58,12 @@ public class Advent_Day1_Tests {
 
     @Test
     public void Day1_Solution2_Test_RealData() throws IOException {
-        Advent_Day1 advent_day_1 = new Advent_Day1();
+        Advent_Day1_Trebuchet advent_day_1 = new Advent_Day1_Trebuchet();
 
-        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day_1_Data.txt"));
+        ArrayList<String> data = (ArrayList<String>) Files.readAllLines(Paths.get("./src/Data/Advent_Day1_Trebuchet_Data.txt"));
 
         int calibrationValuesSum = advent_day_1.Part2_CalculateCalibrationValuesSum(data);
 
-        assertEquals(54338, calibrationValuesSum);
+        assertEquals(53389, calibrationValuesSum);
     }
 }

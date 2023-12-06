@@ -1,4 +1,4 @@
-package AdventCode;
+package AdventCode.Day3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Advent_Day3 {
+public class Advent_Day3_GearRatios {
 
-    public Advent_Day3() {
+    public Advent_Day3_GearRatios() {
     }
 
     public int Part1(ArrayList<String> engineSchema) {

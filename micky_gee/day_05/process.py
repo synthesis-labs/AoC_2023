@@ -46,7 +46,7 @@ def merge_map(first, second):
         elif (s1+r1) < (d0 + r0):
             #case 2 (minor offset overlap )
             print('case 2')
-            val = [d1 + d0 - s1, s0, s1 + r1 - d0+2]
+            val = [d1 + d0 - s1 - 2, s0, s1 + r1 - d0]
         else:
             #case 5 (second map source bigger than first map destination)
             print('case 5')
