@@ -154,3 +154,29 @@ get_puzzle_input which_input year day = do
 -- flatmap
 (-*) :: [a] -> (a -> [b]) -> [b]
 (-*) = flip concatMap
+
+
+
+data SeekResult a
+  = Skip -- Region is continuous, so skip it
+  | Continue -- Region is non-continuous, so keep searching
+  | Found (Int, a) -- Found the spot!
+
+-- A magical binary search that will search the entire space looking for
+-- interesting features (such as jumps in continuous space)
+seeker ::
+     Int
+  -> Int
+  -> (Int -> a)
+  -> ((Int, a) -> (Int, a) -> SeekResult a)
+  -> [(Int, a)]
+seeker start stop produce continuous =
+  let (startv, stopv) = (produce start, produce stop)
+   in case continuous (start, startv) (stop, stopv) of
+        Skip -> []
+        Found v -> [v]
+        Continue ->
+          let mid = (start + stop) `div` 2
+           -- Split the region and fork the search
+           in seeker start mid produce continuous ++
+              seeker mid stop produce continuous
