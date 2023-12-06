@@ -1,4 +1,4 @@
-package AdventCode;
+package AdventCode.Day4;
 
 import java.util.ArrayList;
 import java.util.HashMap;

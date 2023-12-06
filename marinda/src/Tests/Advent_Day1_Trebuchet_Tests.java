@@ -1,6 +1,6 @@
 package Tests;
 
-import AdventCode.Advent_Day1_Trebuchet;
+import AdventCode.Day1.Advent_Day1_Trebuchet;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package Tests;
 
-import AdventCode.Advent_Day4_Scratchcards;
+import AdventCode.Day4.Advent_Day4_Scratchcards;
 import org.junit.Test;
 
 import java.io.IOException;
