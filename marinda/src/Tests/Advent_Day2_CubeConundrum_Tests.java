@@ -1,6 +1,6 @@
 package Tests;
 
-import AdventCode.Advent_Day2_CubeConundrum;
+import AdventCode.Day2.Advent_Day2_CubeConundrum;
 import org.junit.Test;
 
 import java.io.IOException;
