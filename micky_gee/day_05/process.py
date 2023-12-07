@@ -96,6 +96,8 @@ for seed in (seeds):
     else:
         locations = min(locations, seed)
 
+seeds = [x for x in itertools.pairwise(seeds)]
+
 # #part 2
 # #This approach is almost intractable, found correct answer as 125742456
 # locations = None

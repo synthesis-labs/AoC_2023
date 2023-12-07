@@ -1,21 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
-type Card struct {
-	Index   int
-	Numbers []int
-	Count   int
-}
-
 func solvePart2(input []string) {
 
-	var scratchCards = []Card{}
+	var scratchCards = [][]int{}
 
-	for i, line := range input {
+	for _, line := range input {
 
 		var cards = strings.Split(line, "|")
 
@@ -26,11 +19,21 @@ func solvePart2(input []string) {
 		var playingNumbers = GetCardNumbers(cards[1])
 
 		var intersectingNumbers = GetIntersectingNumbers(winningNumbers, playingNumbers)
-		fmt.Println(intersectingNumbers)
 
-		scratchCards = append(scratchCards, Card{Index: i, Numbers: intersectingNumbers, Count: len(intersectingNumbers)})
+		scratchCards = append(scratchCards, intersectingNumbers)
+	}
+}
+
+func copyCard(input []int) []int {
+
+	var result = []int{}
+
+	for i := 0; i < len(input); i++ {
+
+		result = append(result, input[i])
 	}
 
+	return result
 }
 
 func Part2() {
