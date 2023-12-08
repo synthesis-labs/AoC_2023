@@ -1,6 +1,7 @@
 package io.nanovc.aoc2023.day08q2;
 
 import io.nanovc.aoc2023.TestBase;
+import io.nanovc.aoc2023.day08q1.Day08Q1Tests;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -80,6 +81,7 @@ public abstract class Day08Q2Tests extends TestBase
                 22B = (22C, 22C)
                 22C = (22Z, 22Z)
                 22Z = (22B, 22B)
+                XXX = (XXX, XXX)
                 """;
     }
 
@@ -127,7 +129,7 @@ public abstract class Day08Q2Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "17263";
+        return "14631604759649";
     }
 
     public static class Solution1Tests extends Day08Q2Tests
@@ -145,6 +147,13 @@ public abstract class Day08Q2Tests extends TestBase
             super.testSample();
         }
 
+        @Test
+        @Override
+        public void testSolution() throws IOException
+        {
+            super.testSolution();
+        }
+
         @Override
         public String solve(String input)
         {
@@ -158,43 +167,108 @@ public abstract class Day08Q2Tests extends TestBase
             // Parse the network:
             var network = parseNetwork(lines);
 
+            // Keep track of the maximum step:
+            long maxStep = 1;
+
+            // Figure out the full walks for each of the starting nodes:
+            Map<Node, SequencedMap<Long, Node>> startingNodeToEndingNodeToStepCountMap = new LinkedHashMap<>();
+            SortedSet<Long> sortedSteps = new TreeSet<>();
+            for (Node startingNode : network.startingNodes)
+            {
+                // Calculate the full walk for this node:
+                SequencedMap<Long, Node> walkedNetwork = walkNetwork(startingNode, network, instructions);
+
+                // Save this entry for the node:
+                startingNodeToEndingNodeToStepCountMap.put(startingNode, walkedNetwork);
+
+                // Save the step size:
+                Long stepSize = walkedNetwork.firstEntry().getKey();
+                sortedSteps.add(stepSize);
+
+                // Multiply this to get the maximum step for later:
+                maxStep *= stepSize;
+            }
+            // Now we have the full walk for each of the starting nodes.
+
+            // We know that matches are going to need to be a multiple of the longest sequence.
+            // Walk through iterations of the largest sequence until we find an overlap with all other nodes.
+            long largestStep = sortedSteps.last();
+            outer: for (long i = largestStep; i <= maxStep; i+= largestStep)
+            {
+                // Go through each of the steps and make sure they evenly divide into this step:
+                for (Long sortedStep : sortedSteps)
+                {
+                    // Check whether it divides evenly:
+                    if ((i % sortedStep) != 0) continue outer;
+                }
+                // If we get here then it means we found and overlap of all the numbers.
+                return Long.toString(i);
+            }
+
+            // If we get here then we didn't find an answer.
+            return "";
+        }
+
+        /**
+         * This does one full walk of the network starting at the given node, until ALL the exit nodes are traversed.
+         * @param node The node to start at.
+         * @param network The network to traverse.
+         * @param nextInstruction The instruction chain to walk.
+         * @return The map of each step and the corresponding exit node that it hits at that step.
+         */
+        public  SequencedMap<Long, Node> walkNetwork(Node node, Network network, Instruction nextInstruction)
+        {
+            // Create a map of how long this walk takes to hit each exit node:
+            SequencedMap<Long, Node> exitNodeToStepCountMap = new LinkedHashMap<>();
+
+            // Keep track of the remaining exit nodes that we need to hit:
+            Set<Node> remainingExitNodes = new HashSet<>(network.endingNodes);
+
+            // Keep track of exit nodes that have already been hit:
+            Set<Node> exitNodesAlreadyHit = new HashSet<>();
+
             // Walk the network:
             long stepCount = 0;
-            SequencedSet<Node> currentNodes = network.startingNodes;
-            Instruction currentInstruction = instructions;
-            while (!network.endingNodes.containsAll(currentNodes))
+            Instruction currentInstruction = nextInstruction;
+            Node currentNode = node;
+            do
             {
                 // We are not at the end of the network yet.
 
-                // Create the set of next nodes:
-                SequencedSet<Node> nextNodes = new LinkedHashSet<>();
-
-                // Go through each node:
-                for (Node currentNode : currentNodes)
-                {
-                    // Follow the next instruction:
-                    var nextNode = currentInstruction.direction.equals(Left) ? currentNode.left : currentNode.right;
-
-                    // Detect loops:
-                    if (currentNode == nextNode) throw new RuntimeException("Loop on node " + currentNode + " by following instruction " + currentInstruction.index + " " + currentInstruction.direction);
-
-                    // Add this as the next node:
-                    nextNodes.add(nextNode);
-                }
+                // Follow the next instruction:
+                var nextNode = currentInstruction.direction.equals(Left) ? currentNode.left : currentNode.right;
 
                 // Detect loops:
-                //if (stepCount > 1_000_000) throw new RuntimeException("Couldn't get to the end in a million steps");
+                if (currentNode == nextNode) throw new RuntimeException("Loop on node " + currentNode + " by following instruction " + currentInstruction.index + " " + currentInstruction.direction);
+                //if (stepCount > 1_000) break;
+
+                // Check if we are at one of the exit nodes:
+                if (network.endingNodes.contains(currentNode))
+                {
+                    // We are at one of the exit nodes.
+
+                    // Save the step count for this exit code:
+                    exitNodeToStepCountMap.put(stepCount, currentNode);
+
+                    // Check whether we have already hit this exit node before:
+                    if (exitNodesAlreadyHit.contains(currentNode)) break;
+                    // Now we know that we haven't hit this node before.
+
+                    // Flag this as an exit node we have hit:
+                    exitNodesAlreadyHit.add(currentNode);
+
+                    // Remove this from the remaining exit nodes:
+                    remainingExitNodes.remove(currentNode);
+                }
 
                 // Move to the next step:
-                currentNodes = nextNodes;
+                currentNode = nextNode;
                 currentInstruction = currentInstruction.next;
                 stepCount++;
-                if ((stepCount % 1_000_000) == 0) System.out.print(".");
-                if ((stepCount % 10_000_000) == 0) System.out.println();
-                if ((stepCount % 10_000_000) == 0) System.out.printf("%,d%n", stepCount);
             }
+            while (remainingExitNodes.size() > 0);
 
-            return Long.toString(stepCount);
+            return exitNodeToStepCountMap;
         }
 
         /**
