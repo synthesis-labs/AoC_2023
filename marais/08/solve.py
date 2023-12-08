@@ -38,8 +38,7 @@ def solve(instructions, current):
     steps = 0
     inst_pointer = 0
     while True:
-        inst_pointer = inst_pointer % len(instructions)
-        instruction = instructions[inst_pointer]
+        instruction = instructions[inst_pointer % len(instructions)]
         steps += 1
         inst_pointer += 1
         if instruction == 'L':
