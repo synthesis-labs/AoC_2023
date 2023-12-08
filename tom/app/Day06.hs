@@ -1,6 +1,7 @@
 module Day06 where
 
 import           AoC
+
 import           Control.Monad       (join)
 import           Control.Monad.State (State, get, put, runState)
 import qualified Data.Map            as Map
@@ -11,6 +12,7 @@ import           Handy               (SeekResult (..), WhichPuzzleInput (..),
                                       get_puzzle_input, seeker, unique)
 import           Numeric.Search
 import           Parsing             (run_parser, run_parser_with_state)
+
 import           Text.Parsec         (Parsec, anyChar, char, choice, digit,
                                       getState, letter, many1, newline,
                                       optional, sepBy, setState, string, try,
@@ -54,4 +56,5 @@ solve = do
   putStrLn $ show input
   solution_1 <- pure $ solve1 input
   solution_2 <- pure $ solve2 input
-  pure $ SolvedTwo 2023 6 solution_1 (Unknown) solution_2 (Unknown)
+  pure $
+    SolvedTwo 2023 6 solution_1 (Revealed 633080) solution_2 (Revealed 20048741)
