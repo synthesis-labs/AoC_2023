@@ -1,7 +1,7 @@
- use crate::Days::day_2::{day_2_pt1, day_2_pt2};
+ use crate::Days::day_3::{day_3_pt1};
 
  mod Days;
 
 fn main() {
-    day_2_pt2()
+    day_3_pt1()
 }
