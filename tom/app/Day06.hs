@@ -53,7 +53,6 @@ solve2 input = solve1 [fix_input input]
 solve :: IO (Solution Int)
 solve = do
   input <- run_parser parse_it <$> get_puzzle_input Mine 2023 6
-  putStrLn $ show input
   solution_1 <- pure $ solve1 input
   solution_2 <- pure $ solve2 input
   pure $

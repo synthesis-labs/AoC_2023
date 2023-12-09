@@ -12,22 +12,45 @@ import           Handy               (WhichPuzzleInput (..), get_puzzle_input,
 import           Parsing             (run_parser, run_parser_with_state)
 import           Text.Parsec         (Parsec, anyChar, char, choice, digit,
                                       getState, letter, many1, newline,
-                                      optional, sepBy, setState, string, try,
-                                      (<|>))
+                                      optionMaybe, optional, sepBy, setState,
+                                      string, try, (<|>))
 
-parse_it :: Parsec String () ()
-parse_it = do
-  pure ()
+parse_sequence :: Parsec String () [Int]
+parse_sequence =
+  let parse_value = do
+        negative <- optionMaybe (char '-')
+        val <- read <$> many1 digit
+        pure $ maybe val (const $ val * (-1)) negative
+   in (parse_value `sepBy` char ' ') <* newline
 
-solve1 :: () -> Int
-solve1 _ = 0
+gendelta :: [Int] -> [Int] -> [Int]
+gendelta (a:b:rest) acc = gendelta (b : rest) ((b - a) : acc)
+gendelta _ acc          = reverse acc
 
-solve2 :: () -> Int
-solve2 _ = 0
+solve1 :: [[Int]] -> Int
+solve1 input =
+  let next :: [Int] -> Int
+      next i =
+        let deltas = gendelta i []
+         in if all ((==) 0) deltas
+              then last i
+              else last i + (next deltas)
+   in do sum $ next <$> input
+
+solve2 :: [[Int]] -> Int
+solve2 input =
+  let prev :: [Int] -> Int
+      prev i =
+        let deltas = gendelta i []
+         in if all ((==) 0) deltas
+              then head i
+              else head i - (prev deltas)
+   in do sum $ prev <$> input
 
 solve :: IO (Solution Int)
 solve = do
-  input <- pure () -- run_parser parse_it <$> get_puzzle_input Mine 2023 8
-  let solution_1 = solve1 input
-  let solution_2 = solve2 input
-  pure $ SolvedTwo 2023 8 solution_1 (Unknown) solution_2 (Unknown)
+  input <- run_parser (many1 parse_sequence) <$> get_puzzle_input Mine 2023 9
+  solution_1 <- pure $ solve1 input
+  solution_2 <- pure $ solve2 input
+  pure $
+    SolvedTwo 2023 9 solution_1 (Revealed 1916822650) solution_2 (Revealed 966)

@@ -87,6 +87,7 @@ brutewalk tmap orig_ins nodes_we_at (i:inss) =
                  nextp = filter (\(k, _, _) -> k `elem` next) tmap
               in 1 + brutewalk tmap orig_ins nextp inss
 
+-- Just a single walk until we hit the end '??Z' node
 single ::
      [(String, String, String)]
   -> [Instruction]

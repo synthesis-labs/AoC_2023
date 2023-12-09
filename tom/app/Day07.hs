@@ -165,4 +165,11 @@ solve = do
   input <- run_parser (many1 parse_entry) <$> get_puzzle_input Mine 2023 7
   solution_1 <- solve1 input
   solution_2 <- solve2 input
-  pure $ SolvedTwo 2023 7 solution_1 (Revealed 247815719) solution_2 (Unknown)
+  pure $
+    SolvedTwo
+      2023
+      7
+      solution_1
+      (Revealed 247815719)
+      solution_2
+      (Revealed 248747492)
