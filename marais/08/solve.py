@@ -1,5 +1,5 @@
+import math
 import re
-from math import gcd
 
 
 def read_input(file='./test.txt') -> list[str]:
@@ -34,68 +34,33 @@ def make_graph(lines):
     return graph_nodes
 
 
-def solve(lines):
-    instructions = lines[0].strip()
-    graph = make_graph(lines[2:])
-    current = graph['AAA']
+def solve(instructions, current):
     steps = 0
     inst_pointer = 0
     while True:
-        instruction = instructions[inst_pointer] if inst_pointer < len(instructions) else instructions[inst_pointer % len(instructions)]
+        instruction = instructions[inst_pointer % len(instructions)]
         steps += 1
         inst_pointer += 1
         if instruction == 'L':
             current = current.left
-            if current.name == 'ZZZ':
-                return steps
         else:
             current = current.right
-            if current.name == 'ZZZ':
-                return steps
-
-
-def solve2(lines):
-    instructions = lines[0].strip()
-    graph = make_graph(lines[2:])
-    # all nodes with  names ending in A
-    traversals = [node for node in graph.values() if node.name.endswith('A')]
-    traversals_cycle_length = [0, 0, 0, 0, 0, 0]
-    traversal_done = [False, False, False, False, False, False]
-    steps = 0
-    inst_pointer = 0
-    while True:
-        next_traversals = []
-        instruction = instructions[inst_pointer] if inst_pointer < len(instructions) else instructions[
-            inst_pointer % len(instructions)]
-        for i, current in enumerate(traversals):
-            if instruction == 'L':
-                next_traversals.append(current.left)
-            else:
-                next_traversals.append(current.right)
-            if current.name.endswith('Z'):
-                print(f"Traversals {i} reached {current.name} after {traversals_cycle_length[i]} steps")
-                traversal_done[i] = True
-            if not traversal_done[i]:
-                traversals_cycle_length[i] += 1
-        steps += 1
-        inst_pointer += 1
-        traversals = next_traversals
-        # if steps % 100000 == 0:
-        #     print(f"Step {steps}, {','.join([traversal.name for traversal in traversals])}")
-        if all(traversal_done):
-            # calculate the lowest common multiple of the cycle lengths
-            lcm = 1
-            for cycle_length in traversals_cycle_length:
-                lcm = lcm * cycle_length // gcd(lcm, cycle_length)
-            print(f"Cycle lengths: {','.join([str(cycle_length) for cycle_length in traversals_cycle_length])}")
-            print(f"LCM: {lcm}")
-            return lcm
+        if current.name.endswith('Z'):
+            return steps
 
 
 if __name__ == '__main__':
     lines = read_input('input1.txt')
-    answ1 = solve(lines)
+    instructions = lines[0].strip()
+    graph = make_graph(lines[2:])
+    # Part 1
+    start_node = graph['AAA']
+    answ1 = solve(instructions, start_node)
     print(f"Answer 1: {answ1}")
-
-    answ2 = solve2(lines)
-    print(f"Answer 2: {answ2}")
+    # Part 2
+    start_nodes = [node for node in graph.values() if node.name.endswith('A')]
+    counts = [solve(instructions, start_node) for start_node in start_nodes]
+    lcm = math.lcm(*counts)
+    # print(f"Cycle lengths: {','.join([str(cycle_length) for cycle_length in counts])}")
+    # print(f"LCM: {lcm}")
+    print(f"Answer 2: {lcm}")

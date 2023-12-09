@@ -16,11 +16,13 @@ func solvePart2Main() {
 	// Time:        44806572
 	// Distance:   208158110501102
 	var data = [][]int{{44806572}, {208158110501102}}
-	solvePart2(data)
+	solvePart2(data) // Answer: 34278221
 }
 
+// I need a much better solution for this one. My approximations are too wide.
+
 func solvePart2(input [][]int) {
-	var waysOfWinning = 1
+	var waysOfWinning = 0
 
 	for i := 0; i < len(input[0]); i++ {
 		var timeRecord = input[0][i]
@@ -29,34 +31,77 @@ func solvePart2(input [][]int) {
 		// get median time
 		var median = timeRecord / 2
 
-		var left = goLeft2(timeRecord, distanceRecord, median)
-		var right = goRight2(timeRecord, distanceRecord, median+1)
+		var closestMinHold = getClosestMinHold(timeRecord, distanceRecord, median, median)
+		var closestMaxHold = getClosestMaxHold(timeRecord, distanceRecord, closestMinHold, closestMinHold)
+		fmt.Println("closestMinHold", closestMinHold)
+		fmt.Println("closestMaxHold", closestMaxHold)
 
-		waysOfWinning = waysOfWinning * (left + right)
+		var left = getMinHold(timeRecord, distanceRecord, closestMinHold, closestMinHold)
+		fmt.Println("left", left)
+
+		var right = getMaxHold(timeRecord, distanceRecord, closestMaxHold, closestMaxHold)
+		fmt.Println("right", right)
+
+		waysOfWinning = waysOfWinning + (right - left + 1)
 	}
 
 	fmt.Println("waysOfWinning", waysOfWinning)
 }
 
-func goLeft2(timeRecord int, distanceRecord int, hold int) int {
+func getClosestMinHold(timeRecord int, distanceRecord int, hold int, prevHold int) int {
 	var distanceTraveled = (timeRecord - hold) * hold
 
 	if distanceTraveled <= distanceRecord {
-		return 0
+		return prevHold
 	}
 
-	return 1 + goLeft2(timeRecord, distanceRecord, hold-1)
+	prevHold = hold
+	hold = hold / 2
+
+	return getClosestMinHold(timeRecord, distanceRecord, hold, prevHold)
 }
 
-func goRight2(timeRecord int, distanceRecord int, hold int) int {
-
+func getClosestMaxHold(timeRecord int, distanceRecord int, hold int, prevHold int) int {
 	var distanceTraveled = (timeRecord - hold) * hold
 
 	if distanceTraveled <= distanceRecord {
-		return 0
+		return prevHold
 	}
 
-	return 1 + goRight2(timeRecord, distanceRecord, hold+1)
+	prevHold = hold
+	hold = hold * 2
+
+	return getClosestMaxHold(timeRecord, distanceRecord, hold, prevHold)
+}
+
+func getMinHold(timeRecord int, distanceRecord int, hold int, prevHold int) int {
+	var distanceTraveled = (timeRecord - hold) * hold
+
+	if distanceTraveled <= distanceRecord {
+		return prevHold
+	}
+
+	prevHold = hold
+	hold = hold - 1
+
+	return getMinHold(timeRecord, distanceRecord, hold, prevHold)
+}
+
+func getMaxHold(timeRecord int, distanceRecord int, hold int, prevHold int) int {
+	var distanceTraveled = (timeRecord - hold) * hold
+
+	var count = 0
+	for distanceTraveled > distanceRecord {
+		prevHold = hold
+		hold = hold + 1
+
+		distanceTraveled = (timeRecord - hold) * hold
+		count++
+	}
+
+	fmt.Println("count", count)
+
+	return prevHold
 }
 
 func part2() {
