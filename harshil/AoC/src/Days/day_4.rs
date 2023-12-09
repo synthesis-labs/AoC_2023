@@ -15,8 +15,14 @@ pub fn day_4_pt1() {
         let game = &line[0..line.find(":").unwrap()];
         let mut line = line.replace(game, "");
 
-        let winning: Vec<i32> = line[0..line.find("|").unwrap()].split_whitespace().map(|s| s.parse().unwrap()).collect();
-        let yours: Vec<i32> = line[line.find("|").unwrap()..].split_whitespace().map(|s| s.parse().unwrap()).collect();
+        let winning: Vec<i32> = line[0..line.find("|").unwrap()]
+            .split_whitespace()
+            .map(|s| s.parse().unwrap())
+            .collect();
+        let yours: Vec<i32> = line[line.find("|").unwrap()..]
+            .split_whitespace()
+            .map(|s| s.parse().unwrap())
+            .collect();
 
         let won = find_intersection(winning.clone(), yours.clone());
         sum += pow(2, won.len());
@@ -26,6 +32,8 @@ pub fn day_4_pt1() {
 }
 
 pub fn find_intersection(winning:Vec<i32>, yours:Vec<i32>) -> Vec<i32>{
-    return winning.into_iter().filter(|x| yours.contains(x)).collect();
+    return winning.into_iter()
+        .filter(|x| yours.contains(x))
+        .collect();
 }
 
