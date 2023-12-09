@@ -97,7 +97,7 @@ type Year = Int
 
 type Day = Int
 
-data WhichPuzzleInput = Example1 | Example2 | Mine
+data WhichPuzzleInput = Example1 | Example2 | Example3 | Mine
 
 -- Get the puzzle input, either from disk, or from http first time
 --
@@ -107,6 +107,7 @@ get_puzzle_input which_input year day = do
       local_file = case which_input of
         Example1 -> [i|input_#{year}_#{day}_example_1|]
         Example2 -> [i|input_#{year}_#{day}_example_2|]
+        Example3 -> [i|input_#{year}_#{day}_example_3|]
         Mine -> [i|input_#{year}_#{day}|]
       download_url = [i|https://adventofcode.com/#{year}/day/#{day}/input|]
       downloadFile :: IO ()

@@ -108,7 +108,10 @@ executable tom
                       http-client-tls,
                       http-types,
                       string-interpolate,
+                      terminal-progress-bar,
                       memoize,
+                      sort,
+                      strings,
                       mtl,
                       parsec
 

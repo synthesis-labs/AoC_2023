@@ -1,8 +1,8 @@
+use std::collections::HashMap;
+
 use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_question_data};
 
 // --- Day 3: Gear Ratios ---
-// part 1:              81721933
-// latest idiot answer: 518219
 
 // --------------------------------------------------------------------------------------
 // Boilerplate
@@ -26,30 +26,29 @@ pub async fn solve() -> AocAnswer<i32> {
 fn part1(input_data: &String) -> i32 {
     let engine_schematic = parse_engine_schematic(&input_data);
 
-    let engine_parts_sum: i32 = extract_engine_parts(engine_schematic)
-        .iter()
-        // .map(|x| {
-        //     println!("{}", x);
-        //     *x
-        // })
-        .sum();
+    let engine_parts_sum: i32 = extract_engine_parts(engine_schematic).iter().sum();
 
     engine_parts_sum
 }
 
 fn part2(input_data: &String) -> i32 {
-    input_data.len() as i32
+    let engine_schematic = parse_engine_schematic(&input_data);
+
+    let gear_ratio = extract_gear_ratio(engine_schematic);
+
+    gear_ratio.iter().map(|x| x.1[0] * x.1[1]).sum()
 }
 
 fn sample_solution_part1() -> i32 {
     let input_data = String::from(
-    "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..\n");
+        "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..\n");
 
     part1(&input_data)
 }
 
 fn sample_solution_part2() -> i32 {
-    let input_data = String::from("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\nGame 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\nGame 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\nGame 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red\nGame 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green\n");
+    let input_data = String::from(
+        "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..\n");
 
     part2(&input_data)
 }
@@ -69,6 +68,52 @@ fn parse_engine_schematic(input_data: &String) -> EngineSchematic {
         .collect()
 }
 
+
+fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i32>>{
+
+    let mut star_hash_map: HashMap<Point, Vec<i32>> = HashMap::new();
+
+    for i in 0..engine_schematic.len() {
+        let engine_line = engine_schematic[i].clone();
+
+        let numbers = extract_numbers(engine_line.clone());
+        for number in numbers {
+            let col_val: i32 = number.1;
+
+            let point: Point = (i as i32, col_val as i32);
+            let number_length: i32 = number.0.to_string().len() as i32;
+            let row_boundary = engine_schematic.len() as i32 - 1;
+            let col_boundary = engine_schematic[0].len() as i32 - 1;
+            let neighbours = create_neighbours(point, number_length, row_boundary, col_boundary);
+
+            for neighbour in neighbours {
+                let neighbour_row = engine_schematic[neighbour.0 as usize].clone();
+
+                let neighbour_char = neighbour_row.chars().nth(neighbour.1 as usize).unwrap();
+                if neighbour_char == '*' {
+                    if star_hash_map.contains_key(&neighbour) {
+                        star_hash_map.get_mut(&neighbour).unwrap().push(number.0);
+                    } else {
+                        star_hash_map.insert(neighbour, vec![number.0]);
+                    }
+                }
+            }
+
+        }
+    }
+
+    let a: HashMap<Point, Vec<i32>> = star_hash_map
+        .iter()
+        .filter(|x| x.1.len() == 2)
+        .map(|x| (*x.0, x.1.clone()))
+        .collect();
+        // .map(|x| x.1)
+        // .collect();
+    println!("{:?}", a);
+
+    a
+}
+
 fn extract_engine_parts(engine_schematic: EngineSchematic) -> Vec<i32> {
     let mut result: Vec<i32> = Vec::new();
 
@@ -85,19 +130,14 @@ fn extract_engine_parts(engine_schematic: EngineSchematic) -> Vec<i32> {
             let col_boundary = engine_schematic[0].len() as i32 - 1;
             let neighbours = create_neighbours(point, number_length, row_boundary, col_boundary);
 
-            // println!("Neighbours: {:?} for number {:?}", neighbours, number);
-
             if is_engine_part(engine_schematic.clone(), neighbours) {
                 result.push(number.0);
-                // println!("Found engine part: {}", number.0);
             }
         }
     }
 
     result
 }
-
-// fn find_index_of_number(line: String, number: i32) -> i32 {}
 
 fn create_neighbours(
     index: Point,
@@ -156,6 +196,12 @@ fn extract_numbers(line: String) -> Vec<(i32, i32)> {
             temp_num = String::new();
         }
     }
+
+    if !temp_num.is_empty() {
+        let i_temp_num: i32 = temp_num.parse().unwrap();
+        numbers.push((i_temp_num, char_array.len() as i32 - temp_num.len() as i32));
+    }
+
     numbers
 }
 
@@ -166,11 +212,6 @@ fn is_engine_part(engine_schematic: EngineSchematic, neighbours: Vec<Point>) -> 
         let neighbour_char = neighbour_row.chars().nth(neighbour.1 as usize).unwrap();
 
         if is_valid_symbol(neighbour_char) {
-            println!(
-                "neighbour row: {:?}, neighbour char: {}",
-                neighbour_row, neighbour_char
-            );
-
             return true;
         }
     }

@@ -1,6 +1,6 @@
-def read_input(file='./test.txt') -> str:
+def read_input(file='./test.txt') -> list[str]:
     with open(file, 'r') as inputfile:
-        lines = inputfile.read()
+        lines = inputfile.readlines()
     return lines
 
 
@@ -94,21 +94,14 @@ class CamelHand:
 
 
 def read_hands(lines, normal=True):
-    input = lines.split('\n')
-    hands = []
-    for line in input:
-        cards = line.split(' ')
-        hands.append(CamelHand(cards[0], int(cards[1]), normal))
-    return hands
+    return [CamelHand(cards, int(bid), normal) for cards, bid in [line.split(' ') for line in lines]]
 
 
 def solve(lines, normal):
     hands = read_hands(lines, normal)
     hands.sort()
     # print(hands)
-    scores = []
-    for i, hand in enumerate(hands):
-        scores.append(hand.bid * (i + 1))
+    scores = [hand.bid * (i + 1) for i, hand in enumerate(hands)]
     return sum(scores)
 
 
