@@ -23,29 +23,29 @@ parse_sequence =
         pure $ maybe val (const $ val * (-1)) negative
    in (parse_value `sepBy` char ' ') <* newline
 
-gendelta :: [Int] -> [Int] -> [Int]
-gendelta (a:b:rest) acc = gendelta (b : rest) ((b - a) : acc)
-gendelta _ acc          = reverse acc
+make_deltas :: [Int] -> [Int] -> [Int]
+make_deltas (a:b:rest) acc = make_deltas (b : rest) ((b - a) : acc)
+make_deltas _ acc          = reverse acc -- reverse because of cons ^^ and tail rec
 
 solve1 :: [[Int]] -> Int
 solve1 input =
   let next :: [Int] -> Int
       next i =
-        let deltas = gendelta i []
+        let deltas = make_deltas i []
          in if all ((==) 0) deltas
               then last i
               else last i + (next deltas)
-   in do sum $ next <$> input
+   in sum $ next <$> input
 
 solve2 :: [[Int]] -> Int
 solve2 input =
   let prev :: [Int] -> Int
       prev i =
-        let deltas = gendelta i []
+        let deltas = make_deltas i []
          in if all ((==) 0) deltas
               then head i
               else head i - (prev deltas)
-   in do sum $ prev <$> input
+   in sum $ prev <$> input
 
 solve :: IO (Solution Int)
 solve = do
