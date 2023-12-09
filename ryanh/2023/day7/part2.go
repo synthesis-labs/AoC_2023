@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -11,15 +12,20 @@ func solvePart2Sample() {
 	part2Solution(hands)
 }
 
+func solvePart2Main() {
+	var hands = GetMainInput()
+	part2Solution(hands) //254837137 -> too low
+}
+
 func part2Solution(hands []string) {
 	var myHands = classifyHands2(hands)
 
-	// myHands = sortHands(myHands)
+	myHands = sortHands2(myHands)
 
 	fmt.Println(myHands)
 
-	// var total = calculateTotalWinnings(myHands)
-	// fmt.Println(total)
+	var total = calculateTotalWinnings(myHands)
+	fmt.Println(total)
 }
 
 func classifyHands2(input []string) []Hand {
@@ -44,9 +50,9 @@ func classifyHands2(input []string) []Hand {
 			hand.classification = FullHouse
 		} else if isThreeOfAKind2(hand.hand) {
 			hand.classification = ThreeOfAKind
-		} else if isTwoPair(hand.hand) {
+		} else if isTwoPair2(hand.hand) {
 			hand.classification = TwoPair
-		} else if isOnePair(hand.hand) {
+		} else if isOnePair2(hand.hand) {
 			hand.classification = OnePair
 		} else {
 			hand.classification = HighCard
@@ -54,6 +60,142 @@ func classifyHands2(input []string) []Hand {
 
 		hands = append(hands, hand)
 	}
+
+	return hands
+}
+
+func sortHands2(hands []Hand) []Hand {
+
+	result := []Hand{}
+
+	// First sort by Classification
+	sort.Slice(hands, func(i, j int) bool {
+		return int(hands[i].classification) < int(hands[j].classification)
+	})
+
+	// Then sort by subclassification
+
+	var highCard = Filter(hands, func(h Hand) bool {
+		return h.classification == HighCard
+	})
+
+	if len(highCard) > 1 {
+		highCard = subSortHands2(highCard)
+	}
+
+	if len(highCard) > 0 {
+		result = append(result, highCard...)
+	}
+
+	var onePair = Filter(hands, func(h Hand) bool {
+		return h.classification == OnePair
+	})
+
+	if len(onePair) > 1 {
+		onePair = subSortHands2(onePair)
+	}
+
+	if len(onePair) > 0 {
+		result = append(result, onePair...)
+	}
+
+	var twoPairs = Filter(hands, func(h Hand) bool {
+		return h.classification == TwoPair
+	})
+
+	if len(twoPairs) > 1 {
+		twoPairs = subSortHands2(twoPairs)
+	}
+
+	if len(twoPairs) > 0 {
+		result = append(result, twoPairs...)
+	}
+
+	var threeOfAKind = Filter(hands, func(h Hand) bool {
+		return h.classification == ThreeOfAKind
+	})
+
+	if len(threeOfAKind) > 1 {
+		threeOfAKind = subSortHands2(threeOfAKind)
+	}
+
+	if len(threeOfAKind) > 0 {
+		result = append(result, threeOfAKind...)
+	}
+
+	var fullHouse = Filter(hands, func(h Hand) bool {
+		return h.classification == FullHouse
+	})
+
+	if len(fullHouse) > 1 {
+		fullHouse = subSortHands2(fullHouse)
+	}
+
+	if len(fullHouse) > 0 {
+		result = append(result, fullHouse...)
+	}
+
+	var fourOfAKind = Filter(hands, func(h Hand) bool {
+		return h.classification == FourOfAKind
+	})
+
+	if len(fourOfAKind) > 1 {
+		fourOfAKind = subSortHands2(fourOfAKind)
+	}
+
+	if len(fourOfAKind) > 0 {
+		result = append(result, fourOfAKind...)
+	}
+
+	var fiveOfAKind = Filter(hands, func(h Hand) bool {
+		return h.classification == FiveOfAKind
+	})
+
+	if len(fiveOfAKind) > 1 {
+		fiveOfAKind = subSortHands2(fiveOfAKind)
+	}
+
+	if len(fiveOfAKind) > 0 {
+		result = append(result, fiveOfAKind...)
+	}
+
+	return result
+}
+
+func subSortHands2(hands []Hand) []Hand {
+	sort.Slice(hands, func(a, b int) bool {
+
+		var handA = hands[a].hand
+		var handB = hands[b].hand
+
+		var valA = 0
+		var valB = 0
+
+		for i := 0; i < len(handA); i++ {
+			if handA[i] == handB[i] {
+				continue
+			}
+
+			intConvA, _errA := strconv.Atoi(string(handA[i]))
+			intConvB, _errB := strconv.Atoi(string(handB[i]))
+
+			if _errA != nil {
+				valA = getCardValue2(rune(handA[i]))
+			} else {
+				valA = intConvA
+			}
+
+			if _errB != nil {
+				valB = getCardValue2(rune(handB[i]))
+			} else {
+				valB = intConvB
+			}
+
+			break
+		}
+
+		return valA < valB
+	})
 
 	return hands
 }
@@ -68,7 +210,7 @@ func isFiveOfAKind2(hand string) bool {
 		}
 	}
 
-	return len(valMap) == 1
+	return len(valMap) == 1 || len(valMap) == 0
 }
 
 // AA8AA OR QQQJA OR QQJJA
@@ -105,12 +247,16 @@ func isFourOfAKind2(hand string) bool {
 		if val == 2 && jokers == 2 {
 			return true
 		}
+
+		if jokers == 3 {
+			return true
+		}
 	}
 
 	return false
 }
 
-// 22333
+// 22333, 2233J
 func isFullHouse2(hand string) bool {
 	valMap := make(map[rune]int)
 
@@ -140,11 +286,11 @@ func isFullHouse2(hand string) bool {
 		}
 	}
 
-	if twos == 2 && threes == 3 {
+	if twos == 1 && threes == 1 {
 		return true
 	}
 
-	if twos == 2 && threes == 2 && jokers == 1 {
+	if twos == 2 && jokers == 1 {
 		return true
 	}
 
@@ -177,7 +323,71 @@ func isThreeOfAKind2(hand string) bool {
 		if val == 2 && jokers == 1 {
 			return true
 		}
-		if val == 1 && jokers == 2 {
+		if jokers == 2 {
+			return true
+		}
+	}
+
+	return false
+}
+
+// 22334, 22J34
+func isTwoPair2(hand string) bool {
+	valMap := make(map[rune]int)
+
+	var jokers = 0
+	for _, val := range hand {
+		if val != 'J' {
+			if _, exists := valMap[val]; exists {
+				valMap[val] = valMap[val] + 1
+			} else {
+				valMap[val] = 1
+			}
+		} else {
+			jokers++
+		}
+	}
+
+	// map[2:2 3:2 4:1], map[2:2 3:1 4:1]
+
+	twos := 0
+	for _, val := range valMap {
+		if val == 2 {
+			twos++
+		}
+	}
+
+	if twos == 2 {
+		return true
+	}
+
+	if twos == 1 && jokers == 1 {
+		return true
+	}
+
+	return false
+}
+
+// A23A4, A23J4
+func isOnePair2(hand string) bool {
+	valMap := make(map[rune]int)
+
+	for _, val := range hand {
+		if val != 'J' {
+			if _, exists := valMap[val]; exists {
+				valMap[val] = valMap[val] + 1
+			} else {
+				valMap[val] = 1
+			}
+		} else {
+			return true
+		}
+	}
+
+	// map[A:2 2:1 3:1 4:1]
+
+	for _, val := range valMap {
+		if val == 2 {
 			return true
 		}
 	}
@@ -203,5 +413,5 @@ func getCardValue2(card rune) int {
 }
 
 func Part2() {
-	solvePart2Sample()
+	solvePart2Main()
 }
