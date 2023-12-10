@@ -91,14 +91,6 @@ func solvePart1(input []string) {
 	fmt.Println("Steps", steps)
 }
 
-type Graph struct {
-	graph map[string][]string
-}
-
-func AddEdge(g Graph, from, to string) {
-	g.graph[from] = append(g.graph[from], to)
-}
-
 func Part1() {
 	solvePart1Main()
 }

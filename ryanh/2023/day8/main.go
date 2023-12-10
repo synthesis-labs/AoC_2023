@@ -33,6 +33,15 @@ func GetMainInput() []string {
 	return data
 }
 
+type Graph struct {
+	graph      map[string][]string
+	directions string
+}
+
+func AddEdge(g Graph, from, to string) {
+	g.graph[from] = append(g.graph[from], to)
+}
+
 func main() {
-	Part1()
+	Part2()
 }
