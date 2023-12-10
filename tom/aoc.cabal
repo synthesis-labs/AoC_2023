@@ -95,7 +95,7 @@ executable tom
                       Day02_2022
 
     -- LANGUAGE extensions used by modules in this package.
-    default-extensions: QuasiQuotes, LambdaCase, BangPatterns
+    default-extensions: QuasiQuotes, LambdaCase, BangPatterns, TemplateHaskell
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.0.0,
@@ -108,6 +108,7 @@ executable tom
                       http-client-tls,
                       http-types,
                       string-interpolate,
+                      search-algorithms,
                       terminal-progress-bar,
                       memoize,
                       sort,

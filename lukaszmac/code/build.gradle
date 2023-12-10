@@ -5,6 +5,13 @@ plugins {
 group = 'io.nanovc.aoc2023'
 version = '1.0-SNAPSHOT'
 
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -21,5 +28,6 @@ dependencies {
 }
 
 test {
+    systemProperty "file.encoding", "utf-8"
     useJUnitPlatform()
 }
