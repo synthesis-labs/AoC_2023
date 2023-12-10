@@ -1,11 +1,16 @@
 package io.nanovc.aoc2023.day10q2;
 
 import io.nanovc.aoc2023.TestBase;
+import io.nanovc.aoc2023.day10q1.Day10Q1Tests;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -185,7 +190,7 @@ public abstract class Day10Q2Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "6812";
+        return "527";
     }
 
     public static class Solution1Tests extends Day10Q2Tests
@@ -304,176 +309,291 @@ public abstract class Day10Q2Tests extends TestBase
         public String solve(String input)
         {
             // Keep track of the result:
-            var result = 0;
+            AtomicInteger result = new AtomicInteger();
 
             // Parse the maze:
             Maze maze = parseMaze(input);
 
+            // Keep track of the walk:
+            List<Coordinate> walkCoordinates = new ArrayList<>();
+            List<Direction> walkDirections = new ArrayList<>();
+
             // Create four walkers in each direction from the starting location:
-            var walkers = new ArrayList<Walker>();
+            Walker walker = null;
+            Direction actualStartingDirection = null;
             var startingDirections = List.of(Direction.Up, Direction.Down, Direction.Left, Direction.Right);
             for (Direction startingDirection : startingDirections)
             {
                 // Create the walker:
-                Walker walker = new Walker();
-                walkers.add(walker);
-                walker.direction = Direction.Unknown;
-                walker.nextDirection = startingDirection;
-                walker.coordinate = maze.startingCoordinate;
-                walker.distance = 0;
-                walker.maze = maze;
+                Walker attemptedWalker = new Walker();
+                attemptedWalker.direction = Direction.Unknown;
+                attemptedWalker.nextDirection = startingDirection;
+                attemptedWalker.coordinate = maze.startingCoordinate;
+                attemptedWalker.distance = 0;
+                attemptedWalker.maze = maze;
+
+                // Check if the walker can walk in that direction:
+                if (attemptedWalker.canWalk())
+                {
+                    // This is a valid direction for the walker to start from.
+
+                    // Use this as our walker:
+                    walker = attemptedWalker;
+
+                    // Keep track of the actual starting direction:
+                    actualStartingDirection = startingDirection;
+
+                    // Only add this one walker so that it does a loop:
+                    break;
+                }
             }
+            if (walker == null) throw new RuntimeException("Couldn't get the starting walker");
+            // Now we have a walker.
 
-            // Keep track of walkers that we want to kill in each iteration:
-            List<Walker> walkersToKill = new ArrayList<>();
-
-            // Keep walking while we have walkers:
-            outer: while (walkers.size() > 0)
+            // Walk until the walker gets back to the starting point:
+            do
             {
-                // We have more walkers to walk.
-
-                // Start walking:
-                for (var walker : walkers)
+                // Check whether the walker can take a next step:
+                if (walker.canWalk())
                 {
-                    // Check whether the walker can take a next step:
-                    if (walker.canWalk())
-                    {
-                        // The walker can walk.
+                    // The walker can walk.
 
-                        // Let the walker take the next step:
-                        walker.walk();
+                    // Let the walker take the next step:
+                    walker.walk();
 
-                        // Show the walk:
-                        System.out.println(walker);
-                    }
-                    else
-                    {
-                        // The walker can't take the next step.
-                        // Flag for the walker to be killed in the next round:
-                        walkersToKill.add(walker);
-                    }
-                }
+                    // Save the walk:
+                    walkCoordinates.add(walker.coordinate);
+                    walkDirections.add(walker.direction);
 
-                // Kill walkers that can't keep moving:
-                walkers.removeAll(walkersToKill);
-
-                // Clear the list of walkers we want to kill so that we can gather more for this round:
-                walkersToKill.clear();
-
-                // Check if any of the walkers have collided into each other:
-                for (Walker walker : walkers)
-                {
-                    // Check against the others:
-                    for (Walker otherWalker : walkers)
-                    {
-                        if (walker == otherWalker) continue;
-
-                        // Check if they have the same coordinates:
-                        if (walker.coordinate.equals(otherWalker.coordinate))
-                        {
-                            // We have met another walker.
-
-                            // Accumulate the distance walked:
-                            result += walker.distance;
-
-                            // Flag the current walker location as being walked:
-                            maze.walkedTiles[walker.coordinate.row()][walker.coordinate.col()] = WalkedTile.Walked;
-
-                            // Print out the walk:
-                            System.out.println(walker.toStringWithDistance());
-
-                            // Stop walking:
-                            break outer;
-                        }
-                    }
+                    // Show the walk:
+                    System.out.println(walker);
                 }
             }
+            // Walk until we get back to the starting coordinate.
+            while (!walker.coordinate.equals(maze.startingCoordinate));
             // Now we have walked the full length of the pipe.
 
-            // Do a flood-fill from the outer edges to find all the tiles that are outside the pipe:
-            List<FloodFiller> floodFillers = new ArrayList<>();
+            // Set the next direction for the walker to be the starting direction:
+            walker.nextDirection = actualStartingDirection;
 
-            // Seed the algorithm just outside of the maze:
-            List<Coordinate> startingSeeds = new ArrayList<>();
-            for (int i = 0; i < maze.height; i++)
-            {
-                startingSeeds.add(new Coordinate(i, -1));
-                startingSeeds.add(new Coordinate(i, maze.width));
-            }
-            for (int i = 0; i < maze.width; i++)
-            {
-                startingSeeds.add(new Coordinate(-1, i));
-                startingSeeds.add(new Coordinate(maze.height, i));
-            }
-            for (Coordinate startingSeed : startingSeeds)
-            {
-                // Create the flood filler:
-                FloodFiller floodFiller = new FloodFiller();
-                floodFillers.add(floodFiller);
-                floodFiller.coordinate = startingSeed;
-                floodFiller.maze = maze;
-            }
+            // Perform one more walk so that we update everything correctly:
+            walker.walk();
 
-            // Allow each of the flood fillers to fill the maze:
-            List<FloodFiller> floodFillersToKill = new ArrayList<>();
-            List<FloodFiller> floodFillersToAdd = new ArrayList<>();
-            while (floodFillers.size() > 0)
-            {
-                // We still have flood fillers.
+            // Save the last step:
+            walkCoordinates.add(walker.coordinate);
+            walkDirections.add(walker.direction);
 
-                // Go through each flood filler:
-                for (FloodFiller floodFiller : floodFillers)
+            // Print out the ending location for the walker:
+            System.out.println(walker.toStringWithDistance());
+
+            List<Coordinate> leftHandCoordinates = new ArrayList<>();
+            List<Coordinate> rightHandCoordinates = new ArrayList<>();
+
+            // Repeat the walk again, but this time flagging left hand and right hande nodes:
+            for (int i = 0; i < walkCoordinates.size(); i++)
+            {
+                // Get the coordinate and direction:
+                var coordinate = walkCoordinates.get(i);
+                var direction = walkDirections.get(i);
+
+                // Sample the walked path:
+                var walkedTile = maze.walkedTiles[coordinate.row()][coordinate.col()];
+
+                // Get coordinates to sample for the left hand side right hand side:
+                leftHandCoordinates.clear();
+                rightHandCoordinates.clear();
+
+                // Determine the coordinates to mark depending on the travel direction:
+                switch (walkedTile)
                 {
-                    // Spawn the next flood fillers with a 1 neighbourhood around the current one:
+                    case North ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(0, -1));
+                        rightHandCoordinates.add(coordinate.offset(0, 1));
+                    }
+                    case NorthEast ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(-1, 0));
+                        leftHandCoordinates.add(coordinate.offset(-1, -1));
+                        leftHandCoordinates.add(coordinate.offset(0, -1));
+                    }
+                    case NorthWest ->
+                    {
+                        rightHandCoordinates.add(coordinate.offset(-1, 0));
+                        rightHandCoordinates.add(coordinate.offset(-1, 1));
+                        rightHandCoordinates.add(coordinate.offset(0, 1));
+                    }
+                    case East ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(-1, 0));
+                        rightHandCoordinates.add(coordinate.offset(1, 0));
+                    }
+                    case EastNorth ->
+                    {
+                        rightHandCoordinates.add(coordinate.offset(0, 1));
+                        rightHandCoordinates.add(coordinate.offset(1, 1));
+                        rightHandCoordinates.add(coordinate.offset(1, 0));
+                    }
+                    case EastSouth ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(-1, 0));
+                        leftHandCoordinates.add(coordinate.offset(-1, -1));
+                        leftHandCoordinates.add(coordinate.offset(0, -1));
+                    }
+                    case South ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(0, 1));
+                        rightHandCoordinates.add(coordinate.offset(0, -1));
+                    }
+                    case SouthEast ->
+                    {
+                        rightHandCoordinates.add(coordinate.offset(0, -1));
+                        rightHandCoordinates.add(coordinate.offset(1, -1));
+                        rightHandCoordinates.add(coordinate.offset(1, 0));
+                    }
+                    case SouthWest ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(0, 1));
+                        leftHandCoordinates.add(coordinate.offset(1, 1));
+                        leftHandCoordinates.add(coordinate.offset(1, 0));
+                    }
+                    case West ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(1, 0));
+                        rightHandCoordinates.add(coordinate.offset(-1, 0));
+                    }
+                    case WestNorth ->
+                    {
+                        leftHandCoordinates.add(coordinate.offset(1, 0));
+                        leftHandCoordinates.add(coordinate.offset(1, -1));
+                        leftHandCoordinates.add(coordinate.offset(0, -1));
+                    }
+                    case WestSouth ->
+                    {
+                        rightHandCoordinates.add(coordinate.offset(-1, 0));
+                        rightHandCoordinates.add(coordinate.offset(-1, -1));
+                        rightHandCoordinates.add(coordinate.offset(0, -1));
+                    }
+                }
+
+                // Go through all the left-handed coordinates to update:
+                for (Coordinate leftHandCoordinate : leftHandCoordinates)
+                {
+                    // Sample the walked path:
+                    WalkedTile tile = maze.getWalkedTile(leftHandCoordinate);
+
+                    // Update it if necessary:
+                    if (tile.equals(WalkedTile.NotWalked))
+                    {
+                        maze.walkedTiles[leftHandCoordinate.row()][leftHandCoordinate.col()] = WalkedTile.Left;
+                    }
+                }
+
+                // Go through all the right-handed coordinates to update:
+                for (Coordinate rightHandCoordinate : rightHandCoordinates)
+                {
+                    // Sample the walked path:
+                    WalkedTile tile = maze.getWalkedTile(rightHandCoordinate);
+
+                    // Update it if necessary:
+                    if (tile.equals(WalkedTile.NotWalked))
+                    {
+                        maze.walkedTiles[rightHandCoordinate.row()][rightHandCoordinate.col()] = WalkedTile.Right;
+                    }
+                }
+            }
+
+            // Fill gaps until there are no more gaps:
+            List<Coordinate> gapCoordinates = maze.findGapCoordinates();
+
+            // Keep filling gap coordinates:
+            while (gapCoordinates.size() > 0)
+            {
+                // We have gaps to fill.
+
+                // Go through each gap:
+                for (Coordinate gapCoordinate : gapCoordinates)
+                {
+
+                    // Fill the gaps by looking for a left hand or right hand marker in its 1-neighbourhood:
                     for (int i = -1; i <= 1; i++)
                     {
                         for (int j = -1; j <= 1; j++)
                         {
-                            // Skip the current coordinate.
-                            if (i==0 || j==0) continue;
+                            // Skip over the kernel:
+                            if (i == 0 || j == 0) continue;
 
-                            // Get the next coordinate:
-                            Coordinate nextCoordinate = new Coordinate(floodFiller.coordinate.row() + i, floodFiller.coordinate.col() + j);
+                            // Get the coordinate we are sampling:
+                            var sampleCoordinate = gapCoordinate.offset(i, j);
 
-                            // Sample the maze to see if it has already been walked:
-                            WalkedTile nextWalkedTile = maze.getWalkedTile(nextCoordinate);
+                            // Get the walked tile:
+                            var walkedTile = maze.getWalkedTile(sampleCoordinate);
 
-                            // Check whether we can extend the flood fill there:
-                            if (nextWalkedTile.equals(WalkedTile.NotWalked))
+                            // Check whether it is a left or right hand coordinate and extend it:
+                            switch (walkedTile)
                             {
-                                // We have not walked the tile yet.
-
-                                // Create a new flood filler:
-                                FloodFiller nextFloodFiller = new FloodFiller();
-                                nextFloodFiller.maze = maze;
-                                nextFloodFiller.coordinate = nextCoordinate;
-
-                                // Add the flood filler to the next round:
-                                floodFillersToAdd.add(nextFloodFiller);
+                                case Left, Right -> maze.setWalkedTile(gapCoordinate, walkedTile);
                             }
                         }
                     }
-
                 }
+                // Now we have extended the left and right values into gaps by one iteration.
 
-                // Kill All the old flood fillers:
-                floodFillers.clear();
-
-                // Mark the locations of all the flood fillers to add:
-                for (FloodFiller floodFiller : floodFillersToAdd)
-                {
-                    // Mark the location as an outside node:
-                    Coordinate coordinate = floodFiller.coordinate;
-                    maze.walkedTiles[coordinate.row()][coordinate.col()] = WalkedTile.Outside;
-
-                    // Add this to the next round of flood fillers:
-                    floodFillers.add(floodFiller);
-                }
+                // Find the next set of gap coordinates:
+                gapCoordinates = maze.findGapCoordinates();
             }
+            // Now we have filled all the gap coordinates.
 
+            // Find the coordinates of all the left and right hand tiles:
+            var allLeftHandCoordinates = maze.findCoordinatesOfWalkedTile(WalkedTile.Left);
+            var allRightHandCoordinates = maze.findCoordinatesOfWalkedTile(WalkedTile.Right);
 
+            // Figure out which 'colour' (left or right) is touching any of the edges:
+            maze.forEachEdgeCoordinate(
+                    c ->
+                    {
+                        // Sample the maze:
+                        var walkedTile = maze.getWalkedTile(c);
 
-            return "" + result;
+                        // Check if it is a left-handed value:
+                        if (walkedTile.equals(WalkedTile.Left))
+                        {
+                            // Now we know that left-handed tiles are outer tiles.
+
+                            // Flag all the left-hand tiles as outer tiles:
+                            maze.forEachWalkedTile(WalkedTile.Left, coordinate -> maze.setWalkedTile(coordinate, WalkedTile.Outside));
+
+                            // Flag all the right-hand tiles as inner tiles:
+                            maze.forEachWalkedTile(WalkedTile.Right, coordinate -> maze.setWalkedTile(coordinate, WalkedTile.Inside));
+
+                            // Flag that we don't need to continue:
+                            return false;
+                        }
+                        // Check if it is a left-handed value:
+                        else if (walkedTile.equals(WalkedTile.Right))
+                        {
+                            // Now we know that right-handed tiles are outer tiles.
+
+                            // Flag all the right-hand tiles as outer tiles:
+                            maze.forEachWalkedTile(WalkedTile.Right, coordinate -> maze.setWalkedTile(coordinate, WalkedTile.Outside));
+
+                            // Flag all the left-hand tiles as inner tiles:
+                            maze.forEachWalkedTile(WalkedTile.Left, coordinate -> maze.setWalkedTile(coordinate, WalkedTile.Inside));
+
+                            // Flag that we don't need to continue:
+                            return false;
+                        }
+
+                        // Continue to the next edge coordinate:
+                        return true;
+                    }
+            );
+            // Now we have figured out all the inner and outer tiles.
+
+            // Get the number of inner tiles:
+            maze.forEachWalkedTile(WalkedTile.Inside, coordinate -> result.incrementAndGet() );
+
+            return result.toString();
         }
 
         public Maze parseMaze(String input)
@@ -648,6 +768,171 @@ public abstract class Day10Q2Tests extends TestBase
             public WalkedTile getWalkedTile(Coordinate coordinate)
             {
                 return getWalkedTile(coordinate.row(), coordinate.col());
+            }
+
+            /**
+             * This finds the gaps in the maze.
+             * @return The coordinates of gaps in the maze.
+             */
+            public List<Coordinate> findGapCoordinates()
+            {
+                return findCoordinatesOfWalkedTile(WalkedTile.NotWalked);
+            }
+
+            /**
+             * This finds the gaps in the maze.
+             * @param desiredValue The value that we are looking for.
+             * @return The coordinates of gaps in the maze.
+             */
+            public List<Coordinate> findCoordinatesOfWalkedTile(WalkedTile desiredValue)
+            {
+                ArrayList<Coordinate> result = new ArrayList<>();
+
+                for (int i = 0; i < this.height; i++)
+                {
+                    for (int j = 0; j < this.width; j++)
+                    {
+                        // Get the walked tile:
+                        var walkedTile = getWalkedTile(i,j);
+
+                        // Check if this has been walked:
+                        if (walkedTile.equals(desiredValue))
+                        {
+                            // Save this as a gap:
+                            result.add(new Coordinate(i, j));
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            /**
+             * Sets the tile value for the given coordinate.
+             * @param coordinate The coordinate to set.
+             * @param value The value to set.
+             */
+            public void setTile(Coordinate coordinate, Tile value)
+            {
+                setTile(coordinate.row(), coordinate.col(), value);
+            }
+
+            /**
+             * Sets the tile value for the given coordinate.
+             * @param row The row to set.
+             * @param col The column to set.
+             * @param value The value to set.
+             */
+            public void setTile(int row, int col, Tile value)
+            {
+                this.tiles[row][col] = value;
+            }
+
+
+            /**
+             * Sets the walked tile value for the given coordinate.
+             * @param coordinate The coordinate to set.
+             * @param value The value to set.
+             */
+            public void setWalkedTile(Coordinate coordinate, WalkedTile value)
+            {
+                setWalkedTile(coordinate.row(), coordinate.col(), value);
+            }
+
+            /**
+             * Sets the walked tile value for the given coordinate.
+             * @param row The row to set.
+             * @param col The column to set.
+             * @param value The value to set.
+             */
+            public void setWalkedTile(int row, int col, WalkedTile value)
+            {
+                this.walkedTiles[row][col] = value;
+            }
+
+            /**
+             * This iterates through each edge coordinate.
+             * @param edgeCoordinateConsumer The logic to process the edge coordinate. Return true to keep processing. Return false to break out early.
+             */
+            public void forEachEdgeCoordinate(Function<Coordinate, Boolean> edgeCoordinateConsumer)
+            {
+                for (int i = 0; i < this.width; i++)
+                {
+                    Coordinate coordinate;
+                    Boolean shouldContinue;
+
+                    // Top Edge:
+                    coordinate = new Coordinate(0, i);
+                    shouldContinue = edgeCoordinateConsumer.apply(coordinate);
+                    if (!shouldContinue) return;
+
+                    // Bottom Edge:
+                    coordinate = new Coordinate(this.height - 1, i);
+                    shouldContinue = edgeCoordinateConsumer.apply(coordinate);
+                    if (!shouldContinue) return;
+                }
+
+                for (int i = 0; i < this.height; i++)
+                {
+                    Coordinate coordinate;
+                    Boolean shouldContinue;
+
+                    // Left Edge:
+                    coordinate = new Coordinate(i, 0);
+                    shouldContinue = edgeCoordinateConsumer.apply(coordinate);
+                    if (!shouldContinue) return;
+
+                    // Right Edge:
+                    coordinate = new Coordinate(i, this.width - 1);
+                    shouldContinue = edgeCoordinateConsumer.apply(coordinate);
+                    if (!shouldContinue) return;
+                }
+            }
+
+            /**
+             * This iterates through each coordinate of the maze.
+             * @param coordinateConsumer The logic to process the coordinate. Return true to keep processing. Return false to break out early.
+             */
+            public void forEachCoordinate(Function<Coordinate, Boolean> coordinateConsumer)
+            {
+                for (int i = 0; i < this.height; i++)
+                {
+                    for (int j = 0; j < this.width; j++)
+                    {
+                        Boolean shouldContinue;
+
+                        Coordinate coordinate = new Coordinate(i, j);
+                        shouldContinue = coordinateConsumer.apply(coordinate);
+                        if (!shouldContinue) return;
+                    }
+                }
+            }
+
+            /**
+             * This iterates through each coordinate of the maze.
+             * @param filterValue        The value that we want to filter for.
+             * @param coordinateConsumer The logic to process the coordinate. Return true to keep processing. Return false to break out early.
+             */
+            public void forEachWalkedTile(WalkedTile filterValue, Consumer<Coordinate> coordinateConsumer)
+            {
+                forEachCoordinate(
+                        coordinate ->
+                        {
+                            // Sample the walked tile:
+                            var walkedTile = this.getWalkedTile(coordinate);
+
+                            // Check if it matches the value we want:
+                            if (filterValue.equals(walkedTile))
+                            {
+                                // This is a match.
+
+                                // Call the consumer:
+                                coordinateConsumer.accept(coordinate);
+                            }
+
+                            return true;
+                        }
+                );
             }
         }
 
@@ -846,10 +1131,18 @@ public abstract class Day10Q2Tests extends TestBase
                     case ST ->
                     {
                         // Get the next tile:
-                        var nextTile = this.maze.getTile(this.coordinate);
+                        var nextTile = this.maze.getTile(next);
 
                         // Check whether we can walk that way:
-                        yield switch (nextTile) { case NS, EW, NE, NW, SW, SE, ST -> true; default -> false; };
+                        //yield switch (nextTile) { case NS, EW, NE, NW, SW, SE, ST -> true; default -> false; };
+                        yield switch (nextDirection)
+                        {
+                            case Unknown -> false;
+                            case Up -> switch (nextTile) { case NS, SW, SE -> true; default -> false; };
+                            case Down -> switch (nextTile) { case NS, NW, NE -> true; default -> false; };
+                            case Left -> switch (nextTile) { case EW, NE, SE -> true; default -> false; };
+                            case Right -> switch (nextTile) { case EW, SE, SW -> true; default -> false; };
+                        };
                     }
                     case XX, GR -> false;
                 };
@@ -884,6 +1177,16 @@ public abstract class Day10Q2Tests extends TestBase
              */
             public void walk()
             {
+                // Flag that we have walked the tile:
+                this.maze.walkedTiles[this.coordinate.row()][this.coordinate.col()] = switch (this.direction)
+                {
+                    case Unknown -> WalkedTile.Walked;
+                    case Up -> switch (this.nextDirection) { case Direction.Up -> WalkedTile.North; case Direction.Left -> WalkedTile.NorthWest; case Direction.Right -> WalkedTile.NorthEast; default -> WalkedTile.Walked; };
+                    case Down -> switch (this.nextDirection) { case Direction.Down -> WalkedTile.South; case Direction.Left -> WalkedTile.SouthWest; case Direction.Right -> WalkedTile.SouthEast; default -> WalkedTile.Walked; };
+                    case Left -> switch (this.nextDirection) { case Direction.Left -> WalkedTile.West; case Direction.Up -> WalkedTile.WestNorth; case Direction.Down -> WalkedTile.WestSouth; default -> WalkedTile.Walked; };
+                    case Right -> switch (this.nextDirection) { case Direction.Right -> WalkedTile.East; case Direction.Up -> WalkedTile.EastNorth; case Direction.Down -> WalkedTile.EastSouth; default -> WalkedTile.Walked; };
+                };
+
                 // Save the next direction as the current direction:
                 this.direction = this.nextDirection;
 
@@ -937,9 +1240,6 @@ public abstract class Day10Q2Tests extends TestBase
                     };
                     case GR, ST, XX -> Direction.Unknown;
                 };
-
-                // Flag that we have walked the tile:
-                this.maze.walkedTiles[this.coordinate.row()][this.coordinate.col()] = WalkedTile.Walked;
 
                 // Set the next coordinate:
                 this.coordinate = nextCoordinate;
@@ -1103,7 +1403,28 @@ public abstract class Day10Q2Tests extends TestBase
         public enum WalkedTile
         {
             NotWalked(" "),
+
+            North("↑"),
+            NorthEast("↱"),
+            NorthWest("↰"),
+
+            East("→"),
+            EastNorth("⮥"),
+            EastSouth("⮧"),
+
+            South("↓"),
+            SouthEast("⮡"),
+            SouthWest("⮠"),
+
+            West("←"),
+            WestNorth("⮤"),
+            WestSouth("⮦"),
+
             Walked("*"),
+
+            Left("L"),
+            Right("R"),
+
             Outside("O"),
             Inside("I"),
             NotInMaze("⬞");
