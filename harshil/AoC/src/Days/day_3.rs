@@ -13,6 +13,14 @@ pub fn day_3_pt1() {
 
     print!("{}", engine_parts_sum);
 }
+
+fn day_3_pt2(input_data: &String) -> i32 {
+    let engine_schematic = parse_engine_schematic(&input_data);
+
+    let gear_ratio = extract_gear_ratio(engine_schematic);
+
+    gear_ratio.iter().map(|x| x.1[0] * x.1[1]).sum()
+}
 // --------------------------------------------------------------------------------------
 // Actual solution
 // --------------------------------------------------------------------------------------
