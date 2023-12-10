@@ -593,6 +593,10 @@ public abstract class Day10Q2Tests extends TestBase
             // Get the number of inner tiles:
             maze.forEachWalkedTile(WalkedTile.Inside, coordinate -> result.incrementAndGet() );
 
+            // Print out the final maze:
+            var finalMaze = maze.toStringWithPipesAndInsideOutside();
+            System.out.println(finalMaze);
+
             return result.toString();
         }
 
@@ -701,6 +705,39 @@ public abstract class Day10Q2Tests extends TestBase
 
                             // Print the walked tile:
                             stringBuilder.append(walkedTile.prettySymbol);
+                        }
+                    }
+                }
+
+                return stringBuilder.toString();
+            }
+
+            public String toStringWithPipesAndInsideOutside()
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+
+                for (int i = 0; i < tiles.length; i++)
+                {
+                    // Get the row of the maze:
+                    var row = tiles[i];
+
+                    // Add a new line if necessary:
+                    if (i > 0) stringBuilder.append("\n");
+
+                    // Go through the row of the maze:
+                    for (int j = 0; j < row.length; j++)
+                    {
+                        // Get the tile:
+                        var tile = row[j];
+
+                        // Check whether we have walked the tile:
+                        var walkedTile = this.walkedTiles[i][j];
+
+                        // Print the tiles we want:
+                        switch (walkedTile)
+                        {
+                            case Inside, Outside -> stringBuilder.append(walkedTile.prettySymbol);
+                            default -> stringBuilder.append(tile.prettySymbol);
                         }
                     }
                 }
