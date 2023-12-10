@@ -71,7 +71,6 @@ pub(crate) fn day_6_pt2(){
             }
             //println!("cd: {}, ways:{}", chargedDistance,waystowin);
         }
-        mul*=waystowin;
     }
 
     println!("{}", waystowin);
