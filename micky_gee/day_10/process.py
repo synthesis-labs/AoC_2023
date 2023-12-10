@@ -124,3 +124,6 @@ for row in tqdm(range(s[0])):
             data[p] = 'I'
         else:
             data[p] = 'O'
+
+i = data.find('I') == 0
+print(sum(sum(i)))
