@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Read;
 
 pub fn day_3_pt1() {
-    let file = File::open("C:/Users/harsh/RustroverProjects/AoC_2023/harshil/AoC/src/Data/Day_2.txt");
+    let file = File::open("C:/Users/harsh/RustroverProjects/AoC_2023/harshil/AoC/src/Data/Day_3.txt");
     let mut contents = String::new();
     file.unwrap().read_to_string(&mut contents).expect("Error reading file");
 
@@ -14,12 +14,15 @@ pub fn day_3_pt1() {
     print!("{}", engine_parts_sum);
 }
 
-fn day_3_pt2(input_data: &String) -> i32 {
-    let engine_schematic = parse_engine_schematic(&input_data);
+pub fn day_3_pt2()  {
+    let file = File::open("C:/Users/harsh/RustroverProjects/AoC_2023/harshil/AoC/src/Data/Day_3.txt");
+    let mut contents = String::new();
+    file.unwrap().read_to_string(&mut contents).expect("Error reading file");
+    let engine_schematic = parse_engine_schematic(&contents);
 
     let gear_ratio = extract_gear_ratio(engine_schematic);
 
-    gear_ratio.iter().map(|x| x.1[0] * x.1[1]).sum()
+    //println!("{:?}", gear_ratio.iter().map(|x| x.1[0] * x.1[1]).sum())
 }
 // --------------------------------------------------------------------------------------
 // Actual solution
@@ -165,10 +168,10 @@ fn extract_numbers(line: String) -> Vec<(i32, i32)> {
         }
     }
 
-    if !temp_num.is_empty() {
-        let i_temp_num: i32 = temp_num.parse().unwrap();
-        numbers.push((i_temp_num, char_array.len() as i32 - temp_num.len() as i32));
-    }
+    // if !temp_num.is_empty() {
+    //     let i_temp_num: i32 = temp_num.parse().unwrap();
+    //     numbers.push((i_temp_num, char_array.len() as i32 - temp_num.len() as i32));
+    // }
 
     numbers
 }
@@ -176,7 +179,7 @@ fn extract_numbers(line: String) -> Vec<(i32, i32)> {
 fn is_engine_part(engine_schematic: EngineSchematic, neighbours: Vec<Point>) -> bool {
     for neighbour in neighbours {
         let neighbour_row = engine_schematic[neighbour.0 as usize].clone();
-
+        println!("{:?}", neighbour_row.chars().nth(neighbour.1 as usize));
         let neighbour_char = neighbour_row.chars().nth(neighbour.1 as usize).unwrap();
 
         if is_valid_symbol(neighbour_char) {
