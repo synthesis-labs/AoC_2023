@@ -1,6 +1,7 @@
 package io.nanovc.aoc2023.day11q1;
 
 import io.nanovc.aoc2023.TestBase;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * --- Day 11: Cosmic Expansion ---
@@ -209,7 +212,7 @@ public abstract class Day11Q1Tests extends TestBase
             var result = 0;
 
             // Parse the galaxy:
-            var originalUniverse = parseGalaxy(input);
+            var originalUniverse = parseUniverse(input);
 
             // Expand the universe:
             var universe = originalUniverse.expandUniverse();
@@ -217,9 +220,9 @@ public abstract class Day11Q1Tests extends TestBase
             return "" + result;
         }
 
-        private Universe parseGalaxy(String input)
+        private Universe parseUniverse(String input)
         {
-            // Create the galaxy:
+            // Create the universe:
             Universe universe = new Universe();
 
             // Parse each line:
@@ -262,12 +265,12 @@ public abstract class Day11Q1Tests extends TestBase
         public static class Universe
         {
             /**
-             * The galaxys in the galaxy.
+             * The galaxies in the universe.
              */
-            public List<Galaxy> galaxys = new ArrayList<>();
+            public List<Galaxy> galaxies = new ArrayList<>();
 
             /**
-             * The index of galaxys for fast lookup.
+             * The index of galaxies for fast lookup.
              */
             public Index<Galaxy> galaxyIndex = new Index<>();
 
@@ -287,7 +290,7 @@ public abstract class Day11Q1Tests extends TestBase
              */
             public void addGalaxy(Galaxy galaxy)
             {
-                this.galaxys.add(galaxy);
+                this.galaxies.add(galaxy);
                 this.galaxyIndex.add(galaxy);
             }
 
@@ -469,6 +472,16 @@ public abstract class Day11Q1Tests extends TestBase
             {
                 return this.coordinate().y();
             }
+
+            /**
+             * Returns the distance between the two galaxies.
+             * @param otherGalaxy The other galaxy to measure the distance to.
+             * @return The distance between the two galaxies.
+             */
+            public Offset distanceBetween(Galaxy otherGalaxy)
+            {
+                return new Offset(Math.abs(otherGalaxy.x() - x()), Math.abs(otherGalaxy.y() - y()));
+            }
         }
 
         public interface Vector
@@ -495,7 +508,13 @@ public abstract class Day11Q1Tests extends TestBase
          */
         public record Offset(int x, int y) implements Vector
         {
-
+            /**
+             * @return The distance of this offset.
+             */
+            public int distance()
+            {
+                return x() + y();
+            }
         }
 
         /**
@@ -601,6 +620,38 @@ public abstract class Day11Q1Tests extends TestBase
             {
                 return yIndex.containsKey(y);
             }
+        }
+
+        @Test
+        public void testGalaxyDistances_5_9()
+        {
+            Galaxy g5 = new Galaxy(new Coordinate(1,6));
+            Galaxy g9 = new Galaxy(new Coordinate(5,11));
+            assertEquals(9, g5.distanceBetween(g9).distance());
+        }
+
+        @Test
+        public void testGalaxyDistances_1_7()
+        {
+            Galaxy g1 = new Galaxy(new Coordinate(4,0));
+            Galaxy g7 = new Galaxy(new Coordinate(9,10));
+            assertEquals(15, g1.distanceBetween(g7).distance());
+        }
+
+        @Test
+        public void testGalaxyDistances_3_6()
+        {
+            Galaxy g3 = new Galaxy(new Coordinate(0,2));
+            Galaxy g6 = new Galaxy(new Coordinate(12,7));
+            assertEquals(17, g3.distanceBetween(g6).distance());
+        }
+
+        @Test
+        public void testGalaxyDistances_8_9()
+        {
+            Galaxy g8 = new Galaxy(new Coordinate(0,11));
+            Galaxy g9 = new Galaxy(new Coordinate(5,11));
+            assertEquals(5, g8.distanceBetween(g9).distance());
         }
 
     }
