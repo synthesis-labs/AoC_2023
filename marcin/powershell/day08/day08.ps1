@@ -53,13 +53,13 @@ function Direct-Maze($suffix) {
     }
 
     $result = $allSteps[0]
-    1..($allSteps.Length-1) | % {
-        $result = Get-LowestCommonMultiple $result $allSteps[$_]
+    for ($i = 0; $i -lt $allSteps.Length; $i++) {
+        $result = Get-LowestCommonMultiple $result $allSteps[$i]
     }
     
     $result
 
 }
 
-# Direct-Maze 'AAA'
+Direct-Maze 'AAA'
 Direct-Maze 'A'
