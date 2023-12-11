@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -186,7 +183,7 @@ public abstract class Day11Q1Tests extends TestBase
     @Override
     protected String getActualAnswer()
     {
-        return "6812";
+        return "9965032";
     }
 
     public static class Solution1Tests extends Day11Q1Tests
@@ -216,6 +213,19 @@ public abstract class Day11Q1Tests extends TestBase
 
             // Expand the universe:
             var universe = originalUniverse.expandUniverse();
+
+            // Find all the pairs of galaxies that we have:
+            var galaxyPairs = universe.getGalaxyPairs();
+
+            // Work out the total distances:
+            for (Pair<Galaxy> galaxyPair : galaxyPairs)
+            {
+                // Get the offset between the pair of galaxies:
+                Offset offset = galaxyPair.offset();
+
+                // Accumulate the shortest distances:
+                result += offset.distance();
+            }
 
             return "" + result;
         }
@@ -441,7 +451,57 @@ public abstract class Day11Q1Tests extends TestBase
 
                 return expandedUniverse;
             }
+
+            /**
+             * This returns the unique galaxy pairs (without repetition) that exist in the universe.
+             * @return The unique galaxy pairs (without repetition) that exist in the universe.
+             */
+            public Set<Pair<Galaxy>> getGalaxyPairs()
+            {
+                // Create the map for the result:
+                Set<Pair<Galaxy>> result = new LinkedHashSet<>();
+
+                // Go through each galaxy pair (as a triangle, because we don't want repetition):
+                for (int i = 0; i < this.galaxies.size(); i++)
+                {
+                    // Get the galaxy to start from:
+                    var galaxy1 = this.galaxies.get(i);
+
+                    // Work through every other combination of galaxies:
+                    for (int j = i + 1; j < this.galaxies.size(); j++)
+                    {
+                        // Get the galaxy to compare to:
+                        var galaxy2 = this.galaxies.get(j);
+
+                        // Create the pair:
+                        var pair = new Pair<>(galaxy1, galaxy2);
+
+                        // Add the pair to our set:
+                        result.add(pair);
+                    }
+                }
+                return result;
+            }
         }
+
+        /**
+         * A pair of items.
+         * AKA a tuple.
+         * @param item1 The first item.
+         * @param item2 The second item.
+         * @param <TItem> The specific type of item we are interested in.
+         */
+        public record Pair<TItem extends Vector>(TItem item1, TItem item2)
+        {
+            /**
+             * Calculates the offset distance between the two items.
+             * @return The offset distance between the two items.
+             */
+            public Offset offset()
+            {
+                return new Offset(Math.abs(item1().x() - item2().x()), Math.abs(item1().y() - item2().y()));
+            }
+        };
 
         /**
          * A galaxy in the universe.
