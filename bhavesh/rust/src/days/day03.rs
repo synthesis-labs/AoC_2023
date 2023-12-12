@@ -108,10 +108,6 @@ fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i
         .filter(|x| x.1.len() == 2)
         .map(|x| (*x.0, x.1.clone()))
         .collect();
-    // .map(|x| x.1)
-    // .collect();
-    println!("{:?}", a);
-
     a
 }
 

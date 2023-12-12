@@ -20,7 +20,7 @@ async fn main() {
     let day: i32 = day.trim().parse().expect("Please type a number!");
     let answer: AocAnswer = day.apply(parse_day).await;
 
-    println!("answer:\n{}", answer);
+    println!("answer: {}", answer);
 }
 
 async fn parse_day(day: i32) -> AocAnswer {
