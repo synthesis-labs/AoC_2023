@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use apply::Apply;
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator, IntoParallelIterator};
 
 use crate::{
     models::{
@@ -56,6 +56,7 @@ fn part2(input_data: &String) -> String {
         .map(|x| (x[0], x[1]))
         .map(|(seed_start, range)| {
             (seed_start..seed_start + range)
+                .into_par_iter()
                 .map(|seed| find_location_for_seed(seed, almanac.1.clone()))
                 .min()
         })
@@ -89,15 +90,15 @@ fn find_location_for_seed(seed: Seed, almanac_items: AlmanacItems) -> Location {
 
     let mut j = 0;
     while j < almanac_items.len() {
-        let almanac_maps = almanac_items.get(j).unwrap().clone();
-        value = lookup_destination(value, almanac_maps.clone());
+        let almanac_maps = &almanac_items[j];
+        value = lookup_destination(value, &almanac_maps);
         j += 1;
     }
 
     value
 }
 
-fn lookup_destination(value: i64, almanac_maps: AlmanacMaps) -> i64 {
+fn lookup_destination(value: i64, almanac_maps: &AlmanacMaps) -> i64 {
     for almanac_map in almanac_maps {
         let source_range_end = almanac_map.source_start + almanac_map.length;
 
