@@ -5,12 +5,12 @@ use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_questio
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
-pub async fn solve() -> AocAnswer<i32> {
+pub async fn solve() -> AocAnswer {
     let input_data = get_question_data(2023, 1)
         .await
         .expect("Could not get Day 1 data");
 
-    let answer: AocAnswer<i32> = AocAnswer {
+    let answer: AocAnswer = AocAnswer {
         day: 1,
         sample_solution_part1: sample_solution_part1(),
         sample_solution_part2: sample_solution_part2(),
@@ -20,33 +20,35 @@ pub async fn solve() -> AocAnswer<i32> {
     return answer;
 }
 
-fn part1(input_data: &String) -> i32 {
-    return input_data
+fn part1(input_data: &String) -> String {
+    input_data
         .split("\n")
         .filter(|x| !x.is_empty())
         .map(|x| x.to_string())
         .map(match_digits)
         .map(calc_calibration_number)
-        .sum();
+        .sum::<i32>()
+        .to_string()
 }
 
-fn part2(input_data: &String) -> i32 {
-    return input_data
+fn part2(input_data: &String) -> String {
+    input_data
         .split("\n")
         .filter(|x| !x.is_empty())
         .map(|x| x.to_string())
         .map(replace_words_with_digits)
         .map(match_digits)
         .map(calc_calibration_number)
-        .sum();
+        .sum::<i32>()
+        .to_string()
 }
 
-fn sample_solution_part1() -> i32 {
+fn sample_solution_part1() -> String {
     let input_data = String::from("1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet\n");
     part1(&input_data)
 }
 
-fn sample_solution_part2() -> i32 {
+fn sample_solution_part2() -> String {
     let input_data = String::from("two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen\n");
 
     part2(&input_data)

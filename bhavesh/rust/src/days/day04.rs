@@ -1,4 +1,6 @@
-use std::{ops::Sub, collections::HashMap};
+use std::{collections::HashMap, ops::Sub};
+
+use apply::Apply;
 
 use crate::{
     models::{
@@ -13,12 +15,12 @@ use crate::{
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
-pub async fn solve() -> AocAnswer<i32> {
+pub async fn solve() -> AocAnswer {
     let input_data = get_question_data(2023, 4)
         .await
         .expect("Could not get Day 4 data");
 
-    let answer: AocAnswer<i32> = AocAnswer {
+    let answer: AocAnswer = AocAnswer {
         day: 4,
         sample_solution_part1: sample_solution_part1(),
         sample_solution_part2: sample_solution_part2(),
@@ -28,7 +30,7 @@ pub async fn solve() -> AocAnswer<i32> {
     return answer;
 }
 
-fn part1(input_data: &String) -> i32 {
+fn part1(input_data: &String) -> String {
     return input_data
         .split("\n")
         .filter(|x| !x.is_empty())
@@ -36,27 +38,30 @@ fn part1(input_data: &String) -> i32 {
         .map(parse_card)
         .map(|x| intersect(x.winning_numbers, x.my_numbers))
         .map(calculate_card_points)
-        .sum();
+        .sum::<i32>()
+        .to_string();
 }
 
-fn part2(input_data: &String) -> i32 {
-    let cards: Vec<Card> = input_data
+fn part2(input_data: &String) -> String {
+    input_data
         .split("\n")
         .filter(|x| !x.is_empty())
         .map(|x| x.to_string())
         .map(parse_card)
-        .collect();
-
-    calculate_total_scratchcards(&cards).values().sum::<i32>()
+        .collect::<Vec<Card>>()
+        .apply(calculate_total_scratchcards)
+        .values()
+        .sum::<i32>()
+        .to_string()
 }
 
-fn sample_solution_part1() -> i32 {
+fn sample_solution_part1() -> String {
     let input_data = String::from("Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53\nCard 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19\nCard 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1\nCard 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83\nCard 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36\nCard 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11\n");
 
     part1(&input_data)
 }
 
-fn sample_solution_part2() -> i32 {
+fn sample_solution_part2() -> String {
     let input_data = String::from("Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53\nCard 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19\nCard 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1\nCard 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83\nCard 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36\nCard 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11\n");
 
     part2(&input_data)
@@ -66,7 +71,7 @@ fn sample_solution_part2() -> i32 {
 // Actual solution
 // --------------------------------------------------------------------------------------
 
-fn calculate_total_scratchcards(cards: &Vec<Card>) -> HashMap<CardId, i32> {
+fn calculate_total_scratchcards(cards: Vec<Card>) -> HashMap<CardId, i32> {
     let mut result: HashMap<CardId, i32> = cards.iter().map(|x| (x.card_id, 1)).collect();
 
     for card in cards {

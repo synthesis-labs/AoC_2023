@@ -28,6 +28,6 @@ solve2 _ = 0
 solve :: IO (Solution Int)
 solve = do
   input <- pure () -- run_parser parse_it <$> get_puzzle_input Mine 2023 23
-  let solution_1 = solve1 input
-  let solution_2 = solve2 input
+  solution_1 <- pure $ solve1 input
+  solution_2 <- pure $ solve2 input
   pure $ SolvedTwo 2023 23 solution_1 (Unknown) solution_2 (Unknown)

@@ -1,7 +1,9 @@
 import re
 import numpy as np
+np.set_printoptions(linewidth=np.inf)
+from tqdm import tqdm
 
-with open('data/test_3.txt', 'r') as infile:
+with open('data/input.txt', 'r') as infile:
     data = infile.read().split('\n')
 
 data = np.char.array([[x for x in y] for y in data])
@@ -92,3 +94,36 @@ while all([x is not None for x in directions]):
             break
     count += 1
 
+# https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
+# https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
+def ccw(A,B,C):
+    return (C[0]-A[0]) * (B[1]-A[1]) > (B[0]-A[0]) * (C[1]-A[1])
+
+# Return true if line segments AB and CD intersect
+def intersect(A,B,C,D):
+    return ccw(A,C,D) != ccw(B,C,D) and ccw(A,B,C) != ccw(A,B,D)
+
+import itertools
+def in_hull(point, hull):
+    A = (0, 0)
+    B = point
+    inters = sum([intersect(A, B, C, D) for C, D in itertools.pairwise(coords)]) % 2
+    return inters != 0
+
+# b = [tuple(x) for x in np.argwhere(data.find('.') == 0)]
+
+# for p in b:
+s = data.shape
+for row in tqdm(range(s[0])):
+    for col in tqdm(range(s[1])):
+        p = (row, col)
+        if p in coords:
+            print(f'I''m in coords')
+            continue
+        if in_hull(p, coords):
+            data[p] = 'I'
+        else:
+            data[p] = 'O'
+
+i = data.find('I') == 0
+print(sum(sum(i)))

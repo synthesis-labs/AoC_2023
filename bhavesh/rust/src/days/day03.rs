@@ -7,12 +7,12 @@ use crate::{models::aoc_answer::AocAnswer, utils::get_question_data::get_questio
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
-pub async fn solve() -> AocAnswer<i32> {
+pub async fn solve() -> AocAnswer {
     let input_data = get_question_data(2023, 3)
         .await
         .expect("Could not get Day 3 data");
 
-    let result: AocAnswer<i32> = AocAnswer {
+    let result: AocAnswer = AocAnswer {
         day: 3,
         sample_solution_part1: sample_solution_part1(),
         sample_solution_part2: sample_solution_part2(),
@@ -23,30 +23,34 @@ pub async fn solve() -> AocAnswer<i32> {
     result
 }
 
-fn part1(input_data: &String) -> i32 {
+fn part1(input_data: &String) -> String {
     let engine_schematic = parse_engine_schematic(&input_data);
 
     let engine_parts_sum: i32 = extract_engine_parts(engine_schematic).iter().sum();
 
-    engine_parts_sum
+    engine_parts_sum.to_string()
 }
 
-fn part2(input_data: &String) -> i32 {
+fn part2(input_data: &String) -> String {
     let engine_schematic = parse_engine_schematic(&input_data);
 
     let gear_ratio = extract_gear_ratio(engine_schematic);
 
-    gear_ratio.iter().map(|x| x.1[0] * x.1[1]).sum()
+    gear_ratio
+        .iter()
+        .map(|x| x.1[0] * x.1[1])
+        .sum::<i32>()
+        .to_string()
 }
 
-fn sample_solution_part1() -> i32 {
+fn sample_solution_part1() -> String {
     let input_data = String::from(
         "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..\n");
 
     part1(&input_data)
 }
 
-fn sample_solution_part2() -> i32 {
+fn sample_solution_part2() -> String {
     let input_data = String::from(
         "467..114..\n...*......\n..35..633.\n......#...\n617*......\n.....+.58.\n..592.....\n......755.\n...$.*....\n.664.598..\n");
 
@@ -68,9 +72,7 @@ fn parse_engine_schematic(input_data: &String) -> EngineSchematic {
         .collect()
 }
 
-
-fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i32>>{
-
+fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i32>> {
     let mut star_hash_map: HashMap<Point, Vec<i32>> = HashMap::new();
 
     for i in 0..engine_schematic.len() {
@@ -98,7 +100,6 @@ fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i
                     }
                 }
             }
-
         }
     }
 
@@ -107,10 +108,6 @@ fn extract_gear_ratio(engine_schematic: EngineSchematic) -> HashMap<Point, Vec<i
         .filter(|x| x.1.len() == 2)
         .map(|x| (*x.0, x.1.clone()))
         .collect();
-        // .map(|x| x.1)
-        // .collect();
-    println!("{:?}", a);
-
     a
 }
 

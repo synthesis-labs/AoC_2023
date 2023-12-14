@@ -1,20 +1,14 @@
-use std::fmt::{self, Display};
+use std::fmt::{self};
 
-pub struct AocAnswer<T>
-where
-    T: Display,
-{
+pub struct AocAnswer {
     pub day: i32,
-    pub sample_solution_part1: T,
-    pub sample_solution_part2: T,
-    pub part1: T,
-    pub part2: T,
+    pub sample_solution_part1: String,
+    pub sample_solution_part2: String,
+    pub part1: String,
+    pub part2: String,
 }
 
-impl<T> fmt::Display for AocAnswer<T>
-where
-    T: Display,
-{
+impl fmt::Display for AocAnswer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Day: {}", self.day)?;
         writeln!(f, "Sample Solution Part 1: {}", &self.sample_solution_part1)?;

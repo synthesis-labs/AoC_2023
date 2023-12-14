@@ -17,3 +17,5 @@ marinda/out
 
 .clj-kondo
 .lsp
+
+.DS_Store
