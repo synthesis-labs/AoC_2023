@@ -9,7 +9,7 @@ pub fn day_8_pt1() {
     file.unwrap().read_to_string(&mut contents).expect("Error reading file");
 
     let mut vcontent: Vec<&str>=contents.lines().collect();
-    let directions :Vec<&str>=vcontent[0].split("").collect();
+    let mut directions:Vec<&str>=vcontent[0].split("").collect();
     let mut graph =HashMap::new();
     for line in vcontent[2..].iter() {
         let node_name: Vec<&str> = line.split('=').map(|s| s.trim()).collect();
@@ -23,13 +23,16 @@ pub fn day_8_pt1() {
             graph.insert(snode_name, connections);
         }
     }
+    directions.remove(0);
+    directions.remove(directions.len()-1);
     println!("{:?}", graph);
     println!("{:?}", directions);
     let mut current_name="AAA";
     let mut current=graph.get(current_name).unwrap();
-    let mut i =1;
+    let mut i =0;
     let mut steps=0;
     while !current_name.eq("ZZZ"){
+        println!("{}", current_name);
         println!("{}", directions[i]);
         if directions[i].eq("L") {
             current_name=current[0];
@@ -41,13 +44,8 @@ pub fn day_8_pt1() {
         i+=1;
         steps+=1;
         if i==directions.len() {
-            i=1;
-            break;
+            i=0;
         }
-        //if i==20 {break;  }
-        println!("{}", steps);
-        println!("{}", current_name);
-
     }
     println!("{}", steps);
 }
