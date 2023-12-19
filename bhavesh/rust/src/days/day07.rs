@@ -3,7 +3,7 @@ extern crate apply;
 use crate::{
     models::{
         aoc_answer::AocAnswer,
-        camel_cards::{Card, Hand, HandType},
+        camel_cards::{Bid, Card, Hand, HandRow, HandType, HandTypeKind, Hands},
     },
     utils::get_question_data::get_question_data,
 };
@@ -29,7 +29,21 @@ pub async fn solve() -> AocAnswer {
 }
 
 fn part1(input_data: &String) -> String {
-    input_data.lines().next().unwrap().to_string()
+
+    let mut hand_rows: Hands = input_data
+        .split("\n")
+        .filter(|s| !s.is_empty())
+        .map(|s| parse_hand_row(s.to_string()))
+        .collect();
+
+    hand_rows.sort();
+
+    let mut sum = 0;
+    for i in 0..hand_rows.len() {
+        sum += hand_rows[i].bid * (i as i32 + 1);
+    }
+
+    sum.to_string()
 }
 
 fn part2(input_data: &String) -> String {
@@ -39,13 +53,11 @@ fn part2(input_data: &String) -> String {
 fn sample_solution_part1() -> String {
     let input_data = String::from("32T3K 765\nT55J5 684\nKK677 28\nKTJJT 220\nQQQJA 483\n");
 
-    determine_hand_type(parse_hand("T55J5".to_string()));
-
     part1(&input_data)
 }
 
 fn sample_solution_part2() -> String {
-    let input_data = String::from("Time:      7  15   30\nDistance:  9  40  200\n");
+    let input_data = String::from("32T3K 765\nT55J5 684\nKK677 28\nKTJJT 220\nQQQJA 483\n");
 
     part2(&input_data)
 }
@@ -53,6 +65,15 @@ fn sample_solution_part2() -> String {
 // --------------------------------------------------------------------------------------
 // Actual solution
 // --------------------------------------------------------------------------------------
+fn parse_hand_row(row: String) -> HandRow {
+    let mut split = row.split(" ");
+    let hand = parse_hand(split.next().unwrap().to_string());
+    let hand_type = parse_hand_type(&hand);
+    let bid = split.next().unwrap().parse::<Bid>().unwrap();
+
+    HandRow { hand_type, bid }
+}
+
 fn parse_hand(hand: String) -> Hand {
     hand.chars()
         .map(|c| match c {
@@ -74,14 +95,54 @@ fn parse_hand(hand: String) -> Hand {
         .collect()
 }
 
-fn determine_hand_type(hand: Hand) -> HandType {
+fn parse_hand_type(hand: &Hand) -> HandType {
     let mut counts: Vec<i32> = vec![0; 13];
 
     for card in hand {
-        counts[card as usize - 1] += 1
+        counts[*card as usize - 1] += 1
     }
 
-    println!("{:?}", counts);
+    if counts.contains(&5) {
+        return HandType {
+            hand: hand.clone(),
+            kind: HandTypeKind::FiveOfAKind,
+        };
+    }
+    if counts.contains(&4) {
+        return HandType {
+            hand: hand.clone(),
+            kind: HandTypeKind::FourOfAKind,
+        };
+    }
+    if counts.contains(&3) {
+        counts.remove(counts.iter().position(|&x| x == 3).unwrap());
+        if counts.contains(&2) {
+            return HandType {
+                hand: hand.clone(),
+                kind: HandTypeKind::FullHouse,
+            };
+        }
+        return HandType {
+            hand: hand.clone(),
+            kind: HandTypeKind::ThreeOfAKind,
+        };
+    }
+    if counts.contains(&2) {
+        counts.remove(counts.iter().position(|&x| x == 2).unwrap());
+        if counts.contains(&2) {
+            return HandType {
+                hand: hand.clone(),
+                kind: HandTypeKind::TwoPair,
+            };
+        }
+        return HandType {
+            hand: hand.clone(),
+            kind: HandTypeKind::OnePair,
+        };
+    }
 
-    HandType::FiveOfAKind
+    HandType {
+        hand: hand.clone(),
+        kind: HandTypeKind::HighCard,
+    }
 }
