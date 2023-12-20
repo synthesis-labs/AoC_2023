@@ -1,5 +1,7 @@
 extern crate apply;
 
+use strum::IntoEnumIterator;
+
 use crate::{
     models::{
         aoc_answer::AocAnswer,
@@ -29,11 +31,10 @@ pub async fn solve() -> AocAnswer {
 }
 
 fn part1(input_data: &String) -> String {
-
     let mut hand_rows: Hands = input_data
         .split("\n")
         .filter(|s| !s.is_empty())
-        .map(|s| parse_hand_row(s.to_string()))
+        .map(|s| parse_hand_row(s.to_string(), false))
         .collect();
 
     hand_rows.sort();
@@ -47,7 +48,20 @@ fn part1(input_data: &String) -> String {
 }
 
 fn part2(input_data: &String) -> String {
-    input_data.lines().next().unwrap().to_string()
+    let mut hand_rows: Hands = input_data
+        .split("\n")
+        .filter(|s| !s.is_empty())
+        .map(|s| parse_hand_row(s.to_string(), true))
+        .collect();
+
+    hand_rows.sort();
+
+    let mut sum = 0;
+    for i in 0..hand_rows.len() {
+        sum += hand_rows[i].bid * (i as i32 + 1);
+    }
+
+    sum.to_string()
 }
 
 fn sample_solution_part1() -> String {
@@ -65,10 +79,38 @@ fn sample_solution_part2() -> String {
 // --------------------------------------------------------------------------------------
 // Actual solution
 // --------------------------------------------------------------------------------------
-fn parse_hand_row(row: String) -> HandRow {
+
+fn parse_joker_hand_type(hand: &Hand) -> HandType {
+    let mut best_hand: HandType = parse_hand_type(&hand);
+
+    for card in Card::iter() {
+        let new_hand = replace_jokers(hand.clone(), card);
+        let new_hand_type = parse_hand_type(&new_hand);
+
+        if new_hand_type.kind > best_hand.kind {
+            best_hand = new_hand_type
+        }
+    }
+    HandType {
+        hand: replace_jokers(hand.clone(), Card::None),
+        kind: best_hand.kind,
+    }
+}
+
+fn replace_jokers(hand: Hand, replacement: Card) -> Hand {
+    hand.iter()
+        .map(|c| if *c == Card::Jack { replacement } else { *c })
+        .collect()
+}
+
+fn parse_hand_row(row: String, joker: bool) -> HandRow {
     let mut split = row.split(" ");
     let hand = parse_hand(split.next().unwrap().to_string());
-    let hand_type = parse_hand_type(&hand);
+    let hand_type = if joker {
+        parse_joker_hand_type(&hand)
+    } else {
+        parse_hand_type(&hand)
+    };
     let bid = split.next().unwrap().parse::<Bid>().unwrap();
 
     HandRow { hand_type, bid }
@@ -96,7 +138,7 @@ fn parse_hand(hand: String) -> Hand {
 }
 
 fn parse_hand_type(hand: &Hand) -> HandType {
-    let mut counts: Vec<i32> = vec![0; 13];
+    let mut counts: Vec<i32> = vec![0; 14];
 
     for card in hand {
         counts[*card as usize - 1] += 1

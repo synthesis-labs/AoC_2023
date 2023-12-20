@@ -1,5 +1,7 @@
 use core::fmt;
 
+use strum_macros::EnumIter;
+
 pub type Bid = i32;
 pub type Hand = Vec<Card>;
 pub type Hands = Vec<HandRow>;
@@ -12,21 +14,22 @@ pub fn to_string(hand: Hand) -> String {
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------
-#[derive(Debug, PartialEq, Clone, Copy, PartialOrd, Eq, Ord)]
+#[derive(Debug, PartialEq, Clone, Copy, PartialOrd, Eq, Ord, EnumIter)]
 pub enum Card {
-    Ace = 13,
-    King = 12,
-    Queen = 11,
-    Jack = 10,
-    Ten = 9,
-    Nine = 8,
-    Eight = 7,
-    Seven = 6,
-    Six = 5,
-    Five = 4,
-    Four = 3,
-    Three = 2,
-    Two = 1,
+    Ace = 14,
+    King = 13,
+    Queen = 12,
+    Jack = 11,
+    Ten = 10,
+    Nine = 9,
+    Eight = 8,
+    Seven = 7,
+    Six = 6,
+    Five = 5,
+    Four = 4,
+    Three = 3,
+    Two = 2,
+    None = 1,
 }
 
 impl fmt::Display for Card {
@@ -45,6 +48,7 @@ impl fmt::Display for Card {
             Card::Four => write!(f, "4"),
             Card::Three => write!(f, "3"),
             Card::Two => write!(f, "2"),
+            Card::None => write!(f, "None"),
         }
     }
 }
