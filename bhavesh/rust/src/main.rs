@@ -32,6 +32,7 @@ async fn parse_day(day: i32) -> AocAnswer {
         5 => days::day05::solve().await,
         6 => days::day06::solve().await,
         7 => days::day07::solve().await,
+        9 => days::day09::solve().await,
         _ => panic!("Unknown day"),
     }
 }
