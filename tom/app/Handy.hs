@@ -1,6 +1,7 @@
 module Handy where
 
 import           Control.Monad              (join)
+import qualified Data.Set as Set
 import qualified Data.ByteString.Char8      as Char8 (pack)
 import qualified Data.ByteString.Lazy.Char8 as LChar8 (unpack)
 import           Data.String.Interpolate    (i)
@@ -88,12 +89,15 @@ takeUntilM predicate f (a:as) = do
       pure $ b : r
     else pure mempty
 
+unique :: (Eq a, Ord a) => [a] -> [a]
+unique = Set.toList . Set.fromList
+
 -- Make parameters nicer
 type Year = Int
 
 type Day = Int
 
-data WhichPuzzleInput = Example1 | Example2 | Mine
+data WhichPuzzleInput = Example1 | Example2 | Example3 | Mine
 
 -- Get the puzzle input, either from disk, or from http first time
 --
@@ -103,6 +107,7 @@ get_puzzle_input which_input year day = do
       local_file = case which_input of
         Example1 -> [i|input_#{year}_#{day}_example_1|]
         Example2 -> [i|input_#{year}_#{day}_example_2|]
+        Example3 -> [i|input_#{year}_#{day}_example_3|]
         Mine -> [i|input_#{year}_#{day}|]
       download_url = [i|https://adventofcode.com/#{year}/day/#{day}/input|]
       downloadFile :: IO ()
@@ -138,3 +143,41 @@ get_puzzle_input which_input year day = do
   openFile (local_path <> local_file) ReadMode >>= hGetContents
 
 
+
+-- A filter
+(-|) :: [a] -> (a -> Bool) -> [a]
+(-|) = flip filter
+
+-- map
+(-+) :: [a] -> (a -> b) -> [b]
+(-+) = flip (<$>)
+
+-- flatmap
+(-*) :: [a] -> (a -> [b]) -> [b]
+(-*) = flip concatMap
+
+
+
+data SeekResult a
+  = Skip -- Region is continuous, so skip it
+  | Continue -- Region is non-continuous, so keep searching
+  | Found (Int, a) -- Found the spot!
+
+-- A magical binary search that will search the entire space looking for
+-- interesting features (such as jumps in continuous space)
+seeker ::
+     Int
+  -> Int
+  -> (Int -> a)
+  -> ((Int, a) -> (Int, a) -> SeekResult a)
+  -> [(Int, a)]
+seeker start stop produce continuous =
+  let (startv, stopv) = (produce start, produce stop)
+   in case continuous (start, startv) (stop, stopv) of
+        Skip -> []
+        Found v -> [v]
+        Continue ->
+          let mid = (start + stop) `div` 2
+           -- Split the region and fork the search
+           in seeker start mid produce continuous ++
+              seeker mid stop produce continuous

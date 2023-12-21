@@ -1,11 +1,8 @@
- use crate::Days::day_1::{day1pt1, day1pt2};
+ use crate::Days::day_8::{day_8_pt1};
 
-mod Days;
+ mod Days;
 
 fn main() {
-    println!("yo");
-    let s="1234567890";
-    println!("{}",&s[1..3]);
-    day1pt1();
-    day1pt2();
+    day_8_pt1();
+    //day_7_pt2()
 }

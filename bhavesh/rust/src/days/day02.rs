@@ -11,12 +11,12 @@ use crate::{
 // --------------------------------------------------------------------------------------
 // Boilerplate
 // --------------------------------------------------------------------------------------
-pub async fn solve() -> AocAnswer<i32> {
+pub async fn solve() -> AocAnswer {
     let input_data = get_question_data(2023, 2)
         .await
         .expect("Could not get Day 2 data");
 
-    let result: AocAnswer<i32> = AocAnswer {
+    let result: AocAnswer = AocAnswer {
         day: 2,
         sample_solution_part1: sample_solution_part1(),
         sample_solution_part2: sample_solution_part2(),
@@ -27,7 +27,7 @@ pub async fn solve() -> AocAnswer<i32> {
     result
 }
 
-fn part1(input_data: &String) -> i32 {
+fn part1(input_data: &String) -> String {
     input_data
         .split("\n")
         .filter(|x| !x.is_empty())
@@ -36,10 +36,11 @@ fn part1(input_data: &String) -> i32 {
         .map(is_game_possible)
         .filter(|x| x.1)
         .map(|x| x.0)
-        .sum()
+        .sum::<i32>()
+        .to_string()
 }
 
-fn part2(input_data: &String) -> i32 {
+fn part2(input_data: &String) -> String {
     input_data
         .split("\n")
         .filter(|x| !x.is_empty())
@@ -47,16 +48,17 @@ fn part2(input_data: &String) -> i32 {
         .map(parse_game)
         .map(find_max_num_cubes)
         .map(|x| x.1 .0 * x.1 .1 * x.1 .2)
-        .sum()
+        .sum::<i32>()
+        .to_string()
 }
 
-fn sample_solution_part1() -> i32 {
+fn sample_solution_part1() -> String {
     let input_data = String::from("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\nGame 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\nGame 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\nGame 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red\nGame 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green\n");
 
     part1(&input_data)
 }
 
-fn sample_solution_part2() -> i32 {
+fn sample_solution_part2() -> String {
     let input_data = String::from("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\nGame 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\nGame 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\nGame 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red\nGame 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green\n");
 
     part2(&input_data)

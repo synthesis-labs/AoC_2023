@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+apply = "0.3.0"
 dotenv = "0.15.0"
+num = "0.4.1"
+rayon = "1.8.0"
 reqwest = { version = "0.11", features = ["blocking"] }
+strum = "0.25"
+strum_macros = "0.25"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
