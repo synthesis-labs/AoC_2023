@@ -3,3 +3,4 @@ pub mod cube_conundrum;
 pub mod scratchcards;
 pub mod seeds;
 pub mod camel_cards;
+pub mod haunted_wasteland;
