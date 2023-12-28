@@ -9,7 +9,6 @@ pieter/**/.nimcache
 .idea
 
 francoisb/.vs/*
-francoisb/**/*.txt
 francoisb/**/.vs/*
 francoisb/**/bin/*
 francoisb/**/obj/*
