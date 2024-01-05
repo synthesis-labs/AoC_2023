@@ -39,6 +39,13 @@ async fn parse_day(day: i32) -> AocAnswer {
         12 => days::day12::solve().await,
         15 => days::day15::solve().await,
         19 => days::day19::solve().await,
-        _ => panic!("Unknown day"),
+        20 => days::day20::solve().await,
+        _ => {
+            if day > 0 && day < 50 {
+                panic!("This day is not yet implemented")
+            } else {
+                panic!("Unknown day")
+            }
+        }
     }
 }
