@@ -20,3 +20,17 @@ marinda/out
 .lsp
 
 .DS_Store
+
+*.vs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
