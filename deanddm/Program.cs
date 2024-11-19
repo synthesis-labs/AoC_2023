@@ -14,3 +14,13 @@ day2.ExecuteDay1Part2();
 var day3 = new Day3();
 day3.ExecuteDay3Part1();
 day3.ExecuteDay3Part2();
+
+var day4 = new Day4();
+day4.ExecuteDay4Part1();
+day4.ExecuteDay4Part2();
+
+var day5 = new Day5();
+day5.Execute();
+
+//var day24 = new Day24();
+//day24.Execute();
