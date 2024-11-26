@@ -20,7 +20,12 @@ day4.ExecuteDay4Part1();
 day4.ExecuteDay4Part2();
 
 var day5 = new Day5();
-day5.Execute();
+day5.ExecutePart1();
+//day5.ExecutePart2ThatTakes30DamnMinutes();
+
+var day6 = new Day6();
+day6.ExecutePart1();
+day6.ExecutePart2();
 
 //var day24 = new Day24();
 //day24.Execute();

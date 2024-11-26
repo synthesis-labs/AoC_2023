@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,19 +13,26 @@ namespace AOC2023
         List<double> seeds = new List<double>();
         Dictionary<Section, List<GardenMap>> maps = new Dictionary<Section, List<GardenMap>>();
         List<double> locationIds = new List<double>();
+        object locker = new object();
+        double lowestLocationId;
 
-        internal void Execute()
+        internal void ExecutePart1()
         {
             ParseInput();
             FindClosestLocationsForSeeds();
+            Console.WriteLine("Day 5, Part 1: " + locationIds.Min());
+        }
 
-            Console.WriteLine("Day 5: " + locationIds.Min());
+        internal void ExecutePart2ThatTakes30DamnMinutes()
+        {
+            FindClosestLocationsForSeedsRanges();
+            Console.WriteLine("Day 5, Part 2: " + lowestLocationId);
         }
 
         private void ParseInput()
         {
             var section = Section.seeds;
-            foreach (var line in lines) 
+            foreach (var line in lines)
             {
                 if (line == "")
                     continue;
@@ -77,8 +85,8 @@ namespace AOC2023
                 if (!maps.ContainsKey(section))
                     maps.Add(section, new List<GardenMap>());
 
-                maps[section].Add(new GardenMap() 
-                { 
+                maps[section].Add(new GardenMap()
+                {
                     destinationRangeStart = Double.Parse(values[0]),
                     sourceRangeStart = Double.Parse(values[1]),
                     rangeLength = Double.Parse(values[2])
@@ -92,7 +100,7 @@ namespace AOC2023
 
                 if (maps[map.Key].ElementAt(0).sourceRangeStart != 0)
                 {
-                    maps[map.Key].Insert(0, new GardenMap() 
+                    maps[map.Key].Insert(0, new GardenMap()
                     {
                         sourceRangeStart = 0,
                         destinationRangeStart = 0,
@@ -104,29 +112,67 @@ namespace AOC2023
 
         private void FindClosestLocationsForSeeds()
         {
-            foreach (var seed in seeds) 
-            {
-                var soilId = GetMap(Section.seed_to_soil, seed);
-                var fertilizerId = GetMap(Section.soil_to_fertilizer, soilId);
-                var waterId = GetMap(Section.fertilizer_to_water, fertilizerId);
-                var lightId = GetMap(Section.water_to_light, waterId);
-                var temperatureId = GetMap(Section.light_to_temperature, lightId);
-                var humidityId = GetMap(Section.temperature_to_humidity, temperatureId);
-                var locationId = GetMap(Section.humidity_to_location, humidityId);
+            foreach (var seed in seeds)
+                locationIds.Add(GetLocationId(seed));
+        }
 
-                locationIds.Add(locationId);
+        private void FindClosestLocationsForSeedsRanges()
+        {
+            List<SeedRange> ranges = new List<SeedRange>();
+            for (int i = 0; i < seeds.Count; i++)
+            {
+                var seed = seeds[i];
+                var range = seeds[i + 1];
+                ranges.Add(new SeedRange { seed = seed, range = range });
+                i++;
             }
+            ParallelOptions options = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = 10
+            };
+            lowestLocationId = maps[Section.humidity_to_location].Max(x => x.destinationRangeStart);
+            Parallel.ForEach(ranges, options, (seed) =>
+            {
+                for (int i = 0; i < seed.range; i++)
+                {
+                    var locationId = GetLocationId(seed.seed + i);
+                    if (locationId < lowestLocationId)
+                    {
+                        lock (locker)
+                            lowestLocationId = locationId;
+                    }
+                }
+            });
+        }
+
+        private double GetLocationId(double seed)
+        {
+            var soilId = GetMap(Section.seed_to_soil, seed);
+            var fertilizerId = GetMap(Section.soil_to_fertilizer, soilId);
+            var waterId = GetMap(Section.fertilizer_to_water, fertilizerId);
+            var lightId = GetMap(Section.water_to_light, waterId);
+            var temperatureId = GetMap(Section.light_to_temperature, lightId);
+            var humidityId = GetMap(Section.temperature_to_humidity, temperatureId);
+            var locationId = GetMap(Section.humidity_to_location, humidityId);
+
+            return locationId;
         }
 
         private double GetMap(Section section, double source)
         {
-            var map = maps[section].FirstOrDefault(x => x.sourceRangeStart <= source && source <= (x.sourceRangeStart + x.rangeLength));
+            var map = maps[section].FirstOrDefault(x => x.sourceRangeStart <= source && source <= (x.sourceRangeStart + (x.rangeLength - 1)));
 
             var sourceRangeStart = map == null ? source : map.sourceRangeStart;
             var desinationRangeStart = map == null ? source : map.destinationRangeStart;
             double offset = map == null ? 0 : source - map.sourceRangeStart;
 
             return desinationRangeStart + offset;
+        }
+
+        private IEnumerable<double> GenerateDoubleRange(double start, double end, double step)
+        {
+            return Enumerable.Range(0, (int)((end - start) / step) + 1)
+                             .Select(i => start + i * step);
         }
     }
 
@@ -147,6 +193,12 @@ namespace AOC2023
         internal double destinationRangeStart { get; set; }
         internal double sourceRangeStart { get; set; }
         internal double rangeLength { get; set; }
+    }
+
+    internal class SeedRange
+    {
+        internal double seed { get; set; }
+        internal double range { get; set; }
     }
 }
 
