@@ -27,5 +27,8 @@ var day6 = new Day6();
 day6.ExecutePart1();
 day6.ExecutePart2();
 
+var day7 = new Day7();
+day7.ExecutePart1();
+
 //var day24 = new Day24();
 //day24.Execute();
