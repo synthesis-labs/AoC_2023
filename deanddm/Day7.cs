@@ -30,7 +30,10 @@ namespace AOC2023
             CalculateBids();
 
             Console.WriteLine("Day 7, Part 1: " + winnings);
+        }
 
+        internal void ExecutePart2()
+        {
             weights = weightsB;
             ParseInput(true);
             CalculateBids();
