@@ -39,5 +39,12 @@ var day9 = new Day9();
 day9.ExecutePart1();
 day9.ExecutePart2();
 
+var day10 = new Day10();
+day10.ExecutePart1();
+day10.ExecutePart2();
+
+var day11 = new Day11();
+day11.ExecutePart1();
+
 //var day24 = new Day24();
 //day24.Execute();
