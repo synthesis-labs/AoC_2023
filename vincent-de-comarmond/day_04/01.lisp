@@ -1,0 +1,15 @@
+(ql:quickload "str")
+
+(let ((input-fl "./input.txt")
+      (total 0))
+  (with-open-file (stream input-fl)
+    (loop for line = (read-line stream 'nil) while line do
+      (let* ((details (str:trim (second (str:split #\: line))))
+	     (winning-half (str:trim (first (str:split #\| details))))
+	     (winners (remove "" (str:split #\Space winning-half) :test 'equal))
+	     (elfs-half (str:trim (second (str:split #\| details))))
+	     (elfs (remove "" (str:split #\Space elfs-half) :test 'equal))
+	     (num-matches (length (intersection winners elfs :test 'equal)))
+	     (winnings (if (= 0 num-matches) 0 (expt 2 (1- num-matches)))))
+	(setf total (+ total winnings)))))
+  (print total))
