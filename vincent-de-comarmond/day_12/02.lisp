@@ -95,7 +95,7 @@
     (loop for line-num from 1
 	  for line = (read-line stream 'nil)
 	  while line do
-	    (format t "Processing line ~s of 1000~%" line-num)
+	    ;; (format t "Processing line ~s of 1000~%" line-num)
 	    (setf processed-line (read-process-line line 5))
 	    (setf subtotal (solve-single processed-line))
 	    (setf total (+ total subtotal)))
