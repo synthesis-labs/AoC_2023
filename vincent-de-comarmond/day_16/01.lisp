@@ -1,10 +1,3 @@
-;; (defun print-grid (grid max-idx cols)
-;;   (loop for idx from 0 to max-idx do
-;;     (if (and (> idx 0) (= (mod (1+ idx) cols) 0))
-;; 	(format t "~c~%" (gethash idx grid #\.))
-;; 	(format t "~c" (gethash idx grid #\.)))))
-
-
 (defun read-grid (&key input-fp (size 15000))
   (let ((grid (make-hash-table :size size))
 	(cols 0)
@@ -58,7 +51,6 @@
 
 
 (defun redirect (direction reflector cols)
-  ;; (format t "Direction: ~s~%Reflector: ~s~%Cols: ~s~%" direction reflector cols)
   (if (> direction 0)
       (case reflector
 	(#\\ (if (= direction 1) (list cols) '(1)))
@@ -72,33 +64,24 @@
 	(#\| (list (- cols) cols)))))
 
 
-(defun solve-line-segments (grid cols max-idx)
-  (let ((active '((0 1)))
+(defun solve-line-segments (grid cols max-idx start-pos start-dir)
+  (let ((active (list (list start-pos start-dir)))
 	(line-segments '()))
 
     (loop while (> (length active) 0) do
-      ;; (format t "Active: ~s~%" active)
-      ;; (format t "Active length: ~s~%" (length active))
       (destructuring-bind (start dir) (pop active)
-	;; (format t "Unbundled start:~s,~cdirection: ~s~%" start #\tab dir)
 	(let ((ray (trace-ray grid start dir cols max-idx)))
-	  ;; (format t "Traced Ray~%")
 	  (when (not (member ray line-segments :test 'equal))
 	    (push ray line-segments)
-	    ;; (format t "Line-Segments length: ~s~%" (length line-segments))
-	    ;; (format t "~s~%" ray)
 	    (destructuring-bind (end reflector) (cadr ray)
 	      (loop for reflection in (redirect dir reflector cols) do
-		;; (format t "Result: ~s~%" reflection)
-		;; (format t "Reflection: ~s~%" reflection)
-		(push (list end reflection) active)))))))
+		    (push (list end reflection) active)))))))
     line-segments))
 
 
 (defun determine-energized (line-segments cols)
   (let ((line-grid-ids (mapcar (lambda (seg) (mapcar 'car seg)) line-segments))
 	(grid-ids '()))
-    ;; (format t "Line Grid ids: ~s~%" (reverse line-grid-ids))
     (setf line-grid-ids (mapcar (lambda (x) (sort x #'<)) line-grid-ids))
 
     (loop for segment in line-grid-ids do
@@ -110,41 +93,11 @@
     (sort (remove-duplicates grid-ids) #'<)))
 
 
-(destructuring-bind (grid cols max-idx) (read-grid :input-fp "./sample.txt")
-  ;;   (format t "~s~%" cols)
-  ;;   (format t "~s~%" rows)
-  ;; (print-grid grid max-idx cols)
-  
-  ;; (print (trace-ray grid 35 10 cols max-idx))
-  ;; (print (trace-ray grid 5 10 cols max-idx))
-  (let ((energized-squares '())
-	(grid-ids '())
-	;; (grid-copy (make-hash-table))
-	)
-    (setf energized-squares (solve-line-segments grid cols max-idx))
-    (setf grid-ids (determine-energized energized-squares cols))
-    ;; (format t "~s~%" energized-squares)
-    ;; (format t "~s~%" grid-ids)
-    (format t "Number energized squares: ~s~%" (length grid-ids))
-    ;; (loop for id in grid-ids do (setf (gethash id grid-copy) #\#))
-    ;; (print-grid grid-copy max-idx cols)
-    ;; (format t "~%")
-    ;; (print-grid grid max-idx cols)
-    
-    ;; (loop for item in grid-ids do
-    ;; ;; (format t "Min item: ~s~%" (apply 'min item))
-    ;; ;; (format t "Max item: ~s~%~%" (apply 'max item))
-    ;;   (loop for idx from (apply 'min item) to (apply 'max item) do
-    ;; 	    (setf total (adjoin idx total)))
-
-    ;; 	  )
-    ;; ;; (format t "Length squares: ~s~%" (length energized-squares))
-    ;; ;; (format t "~s~%" grid-ids)
-    ;; (format t "~s~%" (length total))
-    ;; (format t "~s~%" (sort total #'<))
-    )
-
-  ;; (format t "Trace Ray: ~s~%" (trace-ray grid 87 10 cols max-idx))
-  )
+(destructuring-bind (grid cols max-idx) (read-grid :input-fp "./input.txt")
+		    (let ((energized-squares '())
+			  (grid-ids '()))
+		      (setf energized-squares (solve-line-segments grid cols max-idx -1 1))
+		      (setf grid-ids (determine-energized energized-squares cols))
+		      (format t "Number energized squares: ~s~%" (length grid-ids))))
 
 ;; 7183 is too low for part 1
