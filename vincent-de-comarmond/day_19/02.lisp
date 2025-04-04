@@ -20,7 +20,7 @@
 			    (parse-integer (subseq (car rule) 2))
 			    (cadr rule))
 		      rule))))
-  
+
 
 (defun parse-workflow (input-line)
   (let* ((pos (position #\{ input-line))
@@ -37,7 +37,6 @@
 	    while (and line (not (equal line ""))) do
 	      (destructuring-bind (name rule) (parse-workflow line)
 		(setf (gethash name workflows) rule))))
-
     workflows))
 
 
@@ -66,7 +65,7 @@
 			      (#\a ':a1)
 			      (#\s ':s1)))
 		 (upper-val (getf universal-part upper-sym)))
-	      
+
 	    (if (and (<= lower-val val)
 		     (<= val upper-val))
 		(case op
